@@ -16,7 +16,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="lonDegree">Longitude in degrees</param>
         /// <param name="latDegree">Latitude in degrees</param>
         /// <param name="transHeight">Tile origin's height in meters.</param>
-        public GisPosition(double lonDegree, double latDegree, double transHeight)
+        public GisPosition(Double lonDegree, Double latDegree, Double transHeight)
         {
             Longitude = Math.PI * lonDegree / 180.0;
             Latitude = Math.PI * latDegree / 180.0;
@@ -26,17 +26,17 @@ namespace Arctron.Obj23dTiles
         /// Tile origin's(models' point (0,0,0)) longitude in radian.
         /// </summary>
         [JsonProperty("longitude")]
-        public double Longitude { get; set; }
+        public Double Longitude { get; set; }
         /// <summary>
         /// Tile origin's latitude in radian.
         /// </summary>
         [JsonProperty("latitude")]
-        public double Latitude { get; set; }
+        public Double Latitude { get; set; }
         /// <summary>
         /// Tile origin's height in meters.
         /// </summary>
         [JsonProperty("transHeight")]
-        public double? TransHeight { get; set; }
+        public Double? TransHeight { get; set; }
     }
 
     //public class TilesetOptions
@@ -83,84 +83,84 @@ namespace Arctron.Obj23dTiles
         /// The tile name of root.
         /// </summary>
         [JsonProperty("tileName")]
-        public string TileName { get; set; }
+        public String TileName { get; set; }
         /// <summary>
         /// The longitute of tile origin point.
         /// </summary>
         [JsonProperty("longitude")]
-        public double Longitude { get; set; } = 2.1196599980996;
+        public Double Longitude { get; set; } = 2.1196599980996;
         /// <summary>
         /// The latitute of tile origin point
         /// </summary>
         [JsonProperty("latitude")]
-        public double Latitude { get; set; } = 0.543224178326409;
+        public Double Latitude { get; set; } = 0.543224178326409;
         /// <summary>
         /// The minimum height of the tile.
         /// </summary>
         [JsonProperty("minHeight")]
-        public double MinHeight { get; set; }
+        public Double MinHeight { get; set; }
         /// <summary>
         /// The maximum height of the tile.
         /// </summary>
         [JsonProperty("maxHeight")]
-        public double MaxHeight { get; set; } = 40.0;
+        public Double MaxHeight { get; set; } = 40.0;
         /// <summary>
         /// The horizontal length (cross longitude) of tile.
         /// </summary>
         [JsonProperty("tileWidth")]
-        public double TileWidth { get; set; } = 200.0;
+        public Double TileWidth { get; set; } = 200.0;
         /// <summary>
         /// The vertical length (cross latitude) of tile.
         /// </summary>
         [JsonProperty("tileHeight")]
-        public double TileHeight { get; set; } = 200.0;
+        public Double TileHeight { get; set; } = 200.0;
         /// <summary>
         /// The transform height of the tile.
         /// </summary>
         [JsonProperty("transHeight")]
-        public double TransHeight { get; set; }
+        public Double TransHeight { get; set; }
         [JsonIgnore]
-        public MinMax OriginalX { get; set; }
+        public DoubleRange OriginalX { get; set; }
         [JsonIgnore]
-        public MinMax OriginalY { get; set; }
+        public DoubleRange OriginalY { get; set; }
         [JsonIgnore]
-        public MinMax OriginalZ { get; set; }
+        public DoubleRange OriginalZ { get; set; }
 
         [JsonProperty("offsetX")]
-        public double OffsetX { get; set; }
+        public Double OffsetX { get; set; }
         
         [JsonProperty("offsetY")]
-        public double OffsetY { get; set; }
+        public Double OffsetY { get; set; }
         /// <summary>
         /// The up axis of model. X, Y, Z
         /// </summary>
         [JsonProperty("gltfUpAxis")]
-        public string GltfUpAxis { get; set; }
+        public String GltfUpAxis { get; set; }
         /// <summary>
         /// The geometric error of tile.
         /// </summary>
         [JsonProperty("geometricError")]
-        public double GeometricError { get; set; } = 200.0;
+        public Double GeometricError { get; set; } = 200.0;
         /// <summary>
         /// The tile transform.
         /// </summary>
         [JsonProperty("transfrom")]
-        public double[] Transfrom { get; set; }
+        public Double[] Transfrom { get; set; }
         /// <summary>
         /// Using region bounding volume.
         /// </summary>
         [JsonProperty("region")]
-        public bool UseRegion { get; set; } = true;
+        public Boolean UseRegion { get; set; } = true;
         /// <summary>
         /// Using box bounding volume.
         /// </summary>
         [JsonProperty("box")]
-        public bool UseBox { get; set; }
+        public Boolean UseBox { get; set; }
         /// <summary>
         /// Using sphere bounding volume.
         /// </summary>
         [JsonProperty("sphere")]
-        public bool UseSphere { get; set; }
+        public Boolean UseSphere { get; set; }
 
         public void SetPosition(GisPosition pos)
         {

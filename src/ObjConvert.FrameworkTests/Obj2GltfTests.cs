@@ -11,21 +11,24 @@ namespace Arctron.ObjConvert.FrameworkTests
 {
     public class Obj2GltfTests
     {
-        static string Name = "model";
-        internal static string TestObjFile = $@"..\..\..\testassets\Office\{Name}.obj";
+        static String Name = "model";
+        internal static String TestObjFile = $@"..\..\..\testassets\Office\{Name}.obj";
 
         public static void TestConvert()
         {
             var objFile = TestObjFile;
             var opts = new GltfOptions();
-            var converter = new Converter(objFile, opts);
+            var mtlParser = new Obj2Gltf.WaveFront.MtlParser();
+            var objParser = new Obj2Gltf.WaveFront.ObjParser();
+            var converter = new Converter( objParser, mtlParser);
+           var (model, _) = converter.Convert(objFile, opts);
             var outputFile = $"{Name}.gltf";
             if (opts.Binary)
             {
                 outputFile = $"{Name}.glb";
             }
-            converter.Run();
-            converter.WriteFile(outputFile);
+           
+            converter.WriteFile(model, false, outputFile);
         }
     }
 }

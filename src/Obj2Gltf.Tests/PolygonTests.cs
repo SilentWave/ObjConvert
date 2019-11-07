@@ -29,9 +29,9 @@ namespace Arctron.Obj2Gltf.Tests
         {
             var box = new BoundingBox
             {
-                X = new MinMax { Min = 0, Max = 10 },
-                Y = new MinMax { Min = 0, Max = 10 },
-                Z = new MinMax { Min = 0, Max = 10 }
+                X = new DoubleRange { Min = 0, Max = 10 },
+                Y = new DoubleRange { Min = 0, Max = 10 },
+                Z = new DoubleRange { Min = 0, Max = 10 }
             };
 
             var boxes = box.Split(2);

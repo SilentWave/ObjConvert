@@ -14,88 +14,62 @@ namespace Arctron.Obj2Gltf
         /// 
         /// </summary>
         /// <param name="withBatchTable">whether include batchtables for 3d tiles</param>
-        public BufferState(bool withBatchTable = false)
+        public BufferState(Boolean withBatchTable = false)
         {
             if (withBatchTable)
             {
-                BatchIdAccessors = new List<int>();
-                BatchIdBuffers = new List<byte[]>();
+                BatchIdAccessors = new List<Int32>();
+                BatchIdBuffers = new List<Byte[]>();
                 BatchTableJson = new BatchTable();
             }
         }
         /// <summary>
         /// Vertex Coordinates Buffers
         /// </summary>
-        public List<byte[]> PositionBuffers { get; } = new List<byte[]>();
+        public List<Byte[]> PositionBuffers { get; } = new List<Byte[]>();
         /// <summary>
         /// Vertex Normals Buffers
         /// </summary>
-        public List<byte[]> NormalBuffers { get; } = new List<byte[]>();
+        public List<Byte[]> NormalBuffers { get; } = new List<Byte[]>();
         /// <summary>
         /// Vertex Texture Coordinates Buffers
         /// </summary>
-        public List<byte[]> UvBuffers { get; } = new List<byte[]>();
+        public List<Byte[]> UvBuffers { get; } = new List<Byte[]>();
         /// <summary>
         /// Triangle Indices Buffers
         /// </summary>
-        public List<byte[]> IndexBuffers { get; } = new List<byte[]>();
+        public List<Byte[]> IndexBuffers { get; } = new List<Byte[]>();
         /// <summary>
         /// Vertex Coordinates Indices
         /// </summary>
-        public List<int> PositionAccessors { get; } = new List<int>();
+        public List<Int32> PositionAccessors { get; } = new List<Int32>();
         /// <summary>
         /// Vertex Normals Indices
         /// </summary>
-        public List<int> NormalAccessors { get; } = new List<int>();
+        public List<Int32> NormalAccessors { get; } = new List<Int32>();
         /// <summary>
         /// Vertex Texture Coordinates Indices
         /// </summary>
-        public List<int> UvAccessors { get; } = new List<int>();
+        public List<Int32> UvAccessors { get; } = new List<Int32>();
         /// <summary>
         /// Triangle Indices
         /// </summary>
-        public List<int> IndexAccessors { get; } = new List<int>();
+        public List<Int32> IndexAccessors { get; } = new List<Int32>();
         /// <summary>
         /// if with batchTable, the current batch id
         /// </summary>
-        public int CurrentBatchId { get; set; }
+        public Int32 CurrentBatchId { get; set; }
         /// <summary>
         /// if with batchTable, batch ids buffers
         /// </summary>
-        public List<byte[]> BatchIdBuffers { get; set; }
+        public List<Byte[]> BatchIdBuffers { get; set; }
         /// <summary>
         /// if with batchTable, batch ids indices
         /// </summary>
-        public List<int> BatchIdAccessors { get; set; }
+        public List<Int32> BatchIdAccessors { get; set; }
         /// <summary>
         /// batched table
         /// </summary>
         public BatchTable BatchTableJson { get; set; }
-    }
-    /// <summary>
-    /// batched table
-    /// </summary>
-    public class BatchTable
-    {
-        /// <summary>
-        /// Batch Ids in ushort
-        /// </summary>
-        [JsonProperty("batchId")]
-        public List<ushort> BatchIds { get; set; } = new List<ushort>();
-        /// <summary>
-        /// Batch Names
-        /// </summary>
-        [JsonProperty("name")]
-        public List<string> Names { get; set; } = new List<string>();
-        /// <summary>
-        /// The maximum boundary for each batch
-        /// </summary>
-        [JsonProperty("maxPoint")]
-        public List<double[]> MaxPoint { get; set; } = new List<double[]>();
-        /// <summary>
-        /// The minimum boundary for each batch
-        /// </summary>
-        [JsonProperty("minPoint")]
-        public List<double[]> MinPoint { get; set; } = new List<double[]>();
     }
 }

@@ -14,18 +14,18 @@ namespace Arctron.Gltf
         /// Optional user-defined name for this object.
         /// </summary>
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public String Name { get; set; }
         /// <summary>
         /// The image's MIME type.
         /// </summary>
         [JsonProperty("mimeType")]
-        public string MimeType { get; set; }
+        public String MimeType { get; set; }
         /// <summary>
         /// The index of the buffer view that contains the image. Use this instead of 
         ///  the image's uri property.
         /// </summary>
         [JsonProperty("bufferView")]
-        public int BufferView { get; set; }
+        public Int32 BufferView { get; set; }
         /// <summary>
         /// The uri of the image.  Relative paths are relative to the .gltf file.
         /// Instead of referencing an external file, the uri can also be a data-uri.
@@ -33,6 +33,6 @@ namespace Arctron.Gltf
         /// Optional
         /// </summary>
         [JsonProperty("uri")]
-        public string Uri { get; set; }
+        public String Uri { get; set; }
     }
 }

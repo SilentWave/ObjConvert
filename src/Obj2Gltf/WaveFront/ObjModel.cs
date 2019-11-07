@@ -11,11 +11,11 @@ namespace Arctron.Obj2Gltf.WaveFront
     /// </summary>
     public class ObjModel
     {
-        public string Name { get; set; }
+        public String Name { get; set; }
         /// <summary>
         /// obj used mat file path
         /// </summary>
-        public string MatFilename { get; set; }
+        public String MatFilename { get; set; }
         /// <summary>
         /// vertices coordinates list
         /// </summary>
@@ -28,10 +28,12 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// vertices texture coordinates list
         /// </summary>
         public List<Vec2> Uvs { get; set; } = new List<Vec2>();
+
+        private Dictionary<String, Geometry> _Geometries = new Dictionary<String, Geometry>();
         /// <summary>
         /// grouped geometries
         /// </summary>
-        public List<Geometry> Geometries { get; set; } = new List<Geometry>();
+        public IEnumerable<Geometry> Geometries => _Geometries.Values;
         /// <summary>
         /// mat list from mat file
         /// </summary>
@@ -66,7 +68,7 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// </summary>
         /// <param name="level">will generate level^3 models</param>
         /// <returns></returns>
-        public List<ObjModel> Split(int level)
+        public List<ObjModel> Split(Int32 level)
         {
             if (level <= 1)
             {
@@ -75,17 +77,17 @@ namespace Arctron.Obj2Gltf.WaveFront
             var box = GetBounding();
             var boxes = box.Split(level);
             var geoes = new List<Geometry>[boxes.Count];
-            var pnts = new List<int>[boxes.Count];
-            var normals = new List<int>[boxes.Count];
-            var uvs = new List<int>[boxes.Count];
+            var pnts = new List<Int32>[boxes.Count];
+            var normals = new List<Int32>[boxes.Count];
+            var uvs = new List<Int32>[boxes.Count];
             for (var i = 0; i < geoes.Length; i++)
             {
                 geoes[i] = new List<Geometry>();
-                pnts[i] = new List<int>();
-                normals[i] = new List<int>();
-                uvs[i] = new List<int>();
+                pnts[i] = new List<Int32>();
+                normals[i] = new List<Int32>();
+                uvs[i] = new List<Int32>();
             }
-            foreach(var g in Geometries)
+            foreach (var g in Geometries)
             {
                 var geoBox = GetBoxIndex(g, boxes);
                 var index = geoBox.Index;
@@ -93,26 +95,31 @@ namespace Arctron.Obj2Gltf.WaveFront
                 geoes[index].Add(gg);
             }
             var objModels = new List<ObjModel>();
-            for(var i = 0;i< geoes.Length;i++)
+            for (var i = 0; i < geoes.Length; i++)
             {
                 if (geoes[i].Count == 0) continue;
-                var m = new ObjModel { Geometries = geoes[i], Name = Name + "_" + objModels.Count,
-                    MatFilename = MatFilename, Materials = Materials };
+                var m = new ObjModel
+                {
+                    _Geometries = geoes[i].ToDictionary(x => x.Id),
+                    Name = Name + "_" + objModels.Count,
+                    MatFilename = MatFilename,
+                    Materials = Materials
+                };
                 if (m.Vertices == null) m.Vertices = new List<Vec3>();
                 var ps = pnts[i];
-                foreach(var v in ps)
+                foreach (var v in ps)
                 {
                     m.Vertices.Add(Vertices[v - 1]);
                 }
                 if (m.Normals == null) m.Normals = new List<Vec3>();
                 var ns = normals[i];
-                foreach(var n in ns)
+                foreach (var n in ns)
                 {
                     m.Normals.Add(Normals[n - 1]);
                 }
                 if (m.Uvs == null) m.Uvs = new List<Vec2>();
                 var ts = uvs[i];
-                foreach(var t in ts)
+                foreach (var t in ts)
                 {
                     m.Uvs.Add(Uvs[t - 1]);
                 }
@@ -121,8 +128,8 @@ namespace Arctron.Obj2Gltf.WaveFront
             return objModels;
         }
 
-        private static FaceVertex GetVertex(FaceVertex v, Dictionary<int, int> pnts, 
-            Dictionary<int, int> normals, Dictionary<int, int> uvs)
+        private static FaceVertex GetVertex(FaceVertex v, Dictionary<Int32, Int32> pnts,
+            Dictionary<Int32, Int32> normals, Dictionary<Int32, Int32> uvs)
         {
             var v1p = v.V;
             var v1n = v.N;
@@ -142,8 +149,8 @@ namespace Arctron.Obj2Gltf.WaveFront
             return new FaceVertex(v1p, v1t, v1n);
         }
 
-        private Geometry AddGeo(Geometry g, GeomBox box, 
-            List<int> pnts, List<int> normals, List<int> uvs)
+        private Geometry AddGeo(Geometry g, GeomBox box,
+            List<Int32> pnts, List<Int32> normals, List<Int32> uvs)
         {
             var gg = new Geometry { Id = g.Id };
 
@@ -200,11 +207,11 @@ namespace Arctron.Obj2Gltf.WaveFront
 
             //    }
             //}
-            
 
-            var pntDict = new Dictionary<int, int>();
-            var normDict = new Dictionary<int, int>();
-            var uvDict = new Dictionary<int, int>();
+
+            var pntDict = new Dictionary<Int32, Int32>();
+            var normDict = new Dictionary<Int32, Int32>();
+            var uvDict = new Dictionary<Int32, Int32>();
 
             foreach (var p in pntList)
             {
@@ -242,7 +249,7 @@ namespace Arctron.Obj2Gltf.WaveFront
 
             foreach (var f in g.Faces)
             {
-                var ff = new Face { MatName = f.MatName };                
+                var ff = new Face { MatName = f.MatName };
 
                 foreach (var t in f.Triangles)
                 {
@@ -261,21 +268,21 @@ namespace Arctron.Obj2Gltf.WaveFront
 
         class GeomBox
         {
-            public int Index { get; set; } = -1;
+            public Int32 Index { get; set; } = -1;
 
             public Vec3 Center { get; set; }
 
-            public SortedSet<int> Pnts { get; set; }
+            public SortedSet<Int32> Pnts { get; set; }
 
-            public SortedSet<int> Norms { get; set; }
+            public SortedSet<Int32> Norms { get; set; }
 
-            public SortedSet<int> Uvs { get; set; }
+            public SortedSet<Int32> Uvs { get; set; }
         }
 
         private GeomBox GetBoxIndex(Geometry g, IList<BoundingBox> boxes)
         {
             var gCenter = GetCenter(g);
-            for(var i = 0;i<boxes.Count;i++)
+            for (var i = 0; i < boxes.Count; i++)
             {
                 if (boxes[i].IsIn(gCenter.Center))
                 {
@@ -288,24 +295,24 @@ namespace Arctron.Obj2Gltf.WaveFront
 
         private GeomBox GetCenter(Geometry g)
         {
-            var ps = new SortedSet<int>();
-            var ns = new SortedSet<int>();
-            var ts = new SortedSet<int>();
+            var ps = new SortedSet<Int32>();
+            var ns = new SortedSet<Int32>();
+            var ts = new SortedSet<Int32>();
             var sumX = 0.0;
             var sumY = 0.0;
             var sumZ = 0.0;
             foreach (var f in g.Faces)
             {
-                foreach(var t in f.Triangles)
+                foreach (var t in f.Triangles)
                 {
                     if (!ps.Contains(t.V1.V))
                     {
-                        var v = Vertices[t.V1.V-1];
+                        var v = Vertices[t.V1.V - 1];
                         sumX += v.X;
                         sumY += v.Y;
                         sumZ += v.Z;
                         ps.Add(t.V1.V);
-                    }                    
+                    }
                     if (!ps.Contains(t.V2.V))
                     {
                         var v = Vertices[t.V2.V - 1];
@@ -313,7 +320,7 @@ namespace Arctron.Obj2Gltf.WaveFront
                         sumY += v.Y;
                         sumZ += v.Z;
                         ps.Add(t.V2.V);
-                    }                    
+                    }
                     if (!ps.Contains(t.V3.V))
                     {
                         var v = Vertices[t.V3.V - 1];
@@ -351,7 +358,7 @@ namespace Arctron.Obj2Gltf.WaveFront
 
                 }
             }
-            
+
             var x = sumX / ps.Count;
             var y = sumY / ps.Count;
             var z = sumZ / ps.Count;
@@ -367,13 +374,14 @@ namespace Arctron.Obj2Gltf.WaveFront
         public BoundingBox GetBounding()
         {
             var box = new BoundingBox();
-            foreach(var v in Vertices)
+            foreach (var v in Vertices)
             {
-                var x = v.X;                
+                var x = v.X;
                 if (box.X.Min > x)
                 {
                     box.X.Min = x;
-                } else if (box.X.Max < x)
+                }
+                else if (box.X.Max < x)
                 {
                     box.X.Max = x;
                 }
@@ -381,7 +389,8 @@ namespace Arctron.Obj2Gltf.WaveFront
                 if (box.Y.Min > y)
                 {
                     box.Y.Min = y;
-                } else if (box.Y.Max < y)
+                }
+                else if (box.Y.Max < y)
                 {
                     box.Y.Max = y;
                 }
@@ -389,42 +398,28 @@ namespace Arctron.Obj2Gltf.WaveFront
                 if (box.Z.Min > z)
                 {
                     box.Z.Min = z;
-                } else if (box.Z.Max < z)
+                }
+                else if (box.Z.Max < z)
                 {
                     box.Z.Max = z;
                 }
             }
             return box;
         }
-    }
 
-    /// <summary>
-    /// geometry with face meshes
-    /// http://paulbourke.net/dataformats/obj/
-    /// http://www.fileformat.info/format/wavefrontobj/egff.htm
-    /// </summary>
-    public class Geometry
-    {
-        /// <summary>
-        /// group name
-        /// </summary>
-        public string Id { get; set; }
-        /// <summary>
-        /// meshes
-        /// </summary>
-        public List<Face> Faces { get; set; } = new List<Face>();
-        /// <summary>
-        /// write geometry
-        /// </summary>
-        /// <param name="writer"></param>
-        public void Write(StreamWriter writer)
+        public Geometry[] GetOrAddGeometries(params String[] names)
         {
-            writer.WriteLine($"g {Id}");
-            writer.WriteLine($"s off");
-            foreach (var f in Faces)
-            {                
-                f.Write(writer);
+            var results = new List<Geometry>();
+            foreach(var name in names)
+            {
+                if (_Geometries.ContainsKey(name)) { results.Add(_Geometries[name]); }
+                else { 
+                    var newGeom = new Geometry() { Id = name };
+                    _Geometries.Add(name, newGeom);
+                    results.Add(newGeom);
+                }
             }
+            return results.ToArray();
         }
     }
 }

@@ -16,12 +16,12 @@ namespace Arctron.Obj23dTiles
         /// If the Binary glTF does not have a batchId attribute, this field must be 0.
         /// </summary>
         [JsonProperty("BATCH_LENGTH")]
-        public uint BatchLength { get; set; }
+        public UInt32 BatchLength { get; set; }
         /// <summary>
         /// A 3-component array of numbers defining the center position
         /// when positions are defined relative-to-center
         /// </summary>
         [JsonProperty("RTC_CENTER")]
-        public float[] RtcCenter { get; set; }
+        public Single[] RtcCenter { get; set; }
     }
 }

@@ -5,14 +5,6 @@ using System.Linq;
 
 namespace Arctron.Obj2Gltf.Geom
 {
-    internal class PlanarAxis
-    {
-        public Vec3 Center { get; set; }
-
-        public Vec3 Axis1 { get; set; }
-
-        public Vec3 Axis2 { get; set; }
-    }
     internal static class GeomUtil
     {
         public static PlanarAxis ComputeProjectTo2DArguments(IList<Vec3> positions)
@@ -21,12 +13,8 @@ namespace Arctron.Obj2Gltf.Geom
 
             var halfAxis = box.HalfAxis;
             var xAxis = halfAxis.GetColumn(0);
-            var scratchXAxis = xAxis;
             var yAxis = halfAxis.GetColumn(1);
-            var scratchYAxis = yAxis;
             var zAxis = halfAxis.GetColumn(2);
-            var scratchZAxis = zAxis;
-
             var xMag = xAxis.GetLength();
             var yMag = yAxis.GetLength();
             var zMag = zAxis.GetLength();

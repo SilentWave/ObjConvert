@@ -7,22 +7,6 @@ using Newtonsoft.Json.Converters;
 namespace Arctron.Gltf
 {
     /// <summary>
-    /// The alpha rendering mode of a material.
-    /// </summary>
-    public enum AlphaMode
-    {
-        /// The alpha value is ignored and the rendered output is fully opaque.
-        OPAQUE = 1,
-
-        /// The rendered output is either fully opaque or fully transparent depending on
-        /// the alpha value and the specified alpha cutoff value.
-        MASK,
-
-        /// The rendered output is either fully opaque or fully transparent depending on
-        /// the alpha value and the specified alpha cutoff value.
-        BLEND,
-    }
-    /// <summary>
     /// The material appearance of a primitive.
     /// </summary>
     public class Material
@@ -31,7 +15,7 @@ namespace Arctron.Gltf
         /// Optional user-defined name for this object.
         /// </summary>
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public String Name { get; set; }
         /// <summary>
         /// A set of parameter values that are used to define the metallic-roughness
         /// material model from Physically-Based Rendering (PBR) methodology. When not
@@ -43,7 +27,7 @@ namespace Arctron.Gltf
         /// The emissive color of the material.
         /// </summary>
         [JsonProperty("emissiveFactor")]
-        public double[] EmissiveFactor { get; set; } // = new double[] { 0, 0, 0 };
+        public Double[] EmissiveFactor { get; set; } // = new double[] { 0, 0, 0 };
         /// <summary>
         /// The alpha rendering mode of the material.
         ///
@@ -77,34 +61,9 @@ namespace Arctron.Gltf
         /// equation is evaluated.
         /// </summary>
         [JsonProperty("doubleSided")]
-        public bool DoubleSided { get; set; }
-    }
-    /// <summary>
-    /// A set of parameter values that are used to define the metallic-roughness
-    /// material model from Physically-Based Rendering (PBR) methodology.
-    /// </summary>
-    public class PbrMetallicRoughness
-    {
-        /// <summary>
-        /// The material's base color factor.
-        /// </summary>
-        [JsonProperty("baseColorFactor")]
-        public double[] BaseColorFactor { get; set; } = new double[] { 1, 1, 1, 1 };
-        /// <summary>
-        /// The base color texture.
-        /// </summary>
-        [JsonProperty("baseColorTexture")]
-        public Info BaseColorTexture { get; set; }
-        /// <summary>
-        /// The metalness of the material.
-        /// </summary>
-        [JsonProperty("metallicFactor")]
-        public double MetallicFactor { get; set; } = 1.0;
-        /// The roughness of the material.
-        ///
-        /// * A value of 1.0 means the material is completely rough.
-        /// * A value of 0.0 means the material is completely smooth.
-        [JsonProperty("roughnessFactor")]
-        public double RoughnessFactor { get; set; } = 0.9;
+        public Boolean DoubleSided { get; set; }
+
+        public override String ToString()
+            => $"AM:{AlphaMode} DS:{(DoubleSided ? 1 : 0)} MRB:[{PbrMetallicRoughness.BaseColorFactor[0]}, {PbrMetallicRoughness.BaseColorFactor[1]}, {PbrMetallicRoughness.BaseColorFactor[2]}, {PbrMetallicRoughness.BaseColorFactor[3]}] E:[{EmissiveFactor[0]}, {EmissiveFactor[1]}, {EmissiveFactor[2]}] M:{PbrMetallicRoughness.MetallicFactor} R:{PbrMetallicRoughness.RoughnessFactor} T:{PbrMetallicRoughness.BaseColorTexture?.Index.ToString() ?? "<null>"} {Name}";
     }
 }

@@ -8,11 +8,11 @@ namespace Arctron.Obj2Gltf.Geom
     // Cesium
     internal class Matrix3
     {
-        private readonly double[] _arr = new double[9];
+        private readonly Double[] _arr = new Double[9];
 
-        public Matrix3(double column0Row0, double column1Row0, double column2Row0,
-                           double column0Row1, double column1Row1, double column2Row1,
-                           double column0Row2, double column1Row2, double column2Row2)
+        public Matrix3(Double column0Row0, Double column1Row0, Double column2Row0,
+                           Double column0Row1, Double column1Row1, Double column2Row1,
+                           Double column0Row2, Double column1Row2, Double column2Row2)
         {
             _arr[0] = column0Row0;
             _arr[1] = column0Row1;
@@ -25,7 +25,7 @@ namespace Arctron.Obj2Gltf.Geom
             _arr[8] = column2Row2;
         }
 
-        public Vec3 GetColumn(int index)
+        public Vec3 GetColumn(Int32 index)
         {
             switch(index)
             {
@@ -50,12 +50,12 @@ namespace Arctron.Obj2Gltf.Geom
             return new Matrix3(_arr[0], _arr[1], _arr[2], _arr[3], _arr[4], _arr[5], _arr[6], _arr[7], _arr[8]);
         }
 
-        private double ComputeFrobeniusNorm()
+        private Double ComputeFrobeniusNorm()
         {
             return Math.Sqrt(_arr.Select(c => c * c).Sum());
         }
 
-        private static int GetArrayIndex(int row, int col)
+        private static Int32 GetArrayIndex(Int32 row, Int32 col)
         {
             return row + col * 3;
         }
@@ -76,7 +76,7 @@ namespace Arctron.Obj2Gltf.Geom
             return new Matrix3(column0Row0, column0Row1, column0Row2, column1Row0, column1Row1, column1Row2, column2Row0, column2Row1, column2Row2);
         }
 
-        public double this[int row, int col]
+        public Double this[Int32 row, Int32 col]
         {
             get { return _arr[GetArrayIndex(row, col)]; }
             set
@@ -86,7 +86,7 @@ namespace Arctron.Obj2Gltf.Geom
             }
         }
 
-        private double OffDiagonalFrobeniusNorm()
+        private Double OffDiagonalFrobeniusNorm()
         {
             var a = _arr[GetArrayIndex(0, 0)];
             var b = _arr[GetArrayIndex(1, 1)];
@@ -94,8 +94,8 @@ namespace Arctron.Obj2Gltf.Geom
             return Math.Sqrt(a * a + b * b + c * c);
         }
 
-        static int[] rowVal =  { 1, 0, 0 };
-        static int[] colVal = { 2, 2, 1 };
+        static Int32[] rowVal =  { 1, 0, 0 };
+        static Int32[] colVal = { 2, 2, 1 };
         /// <summary>
         /// This routine was created based upon Matrix Computations, 3rd ed., by Golub and Van Loan,
         // section 8.4.2 The 2by2 Symmetric Schur Decomposition.
@@ -134,7 +134,7 @@ namespace Arctron.Obj2Gltf.Geom
                 var qp = this[p, q];
 
                 var tau = (qq - pp) / (2.0 * qp);
-                var t = 0.0;
+                Double t;
                 if (tau < 0)
                 {
                     t = -1.0 / (-tau + Math.Sqrt(1.0 + tau * tau));
@@ -156,7 +156,7 @@ namespace Arctron.Obj2Gltf.Geom
             return result;
         }
 
-        public double this[int index]
+        public Double this[Int32 index]
         {
             get { return _arr[index]; }
         }
@@ -164,7 +164,7 @@ namespace Arctron.Obj2Gltf.Geom
         public Matrix3 MultiplyByScale(Vec3 scale)
         {
             var matrix = _arr;
-            var result = new double[9];
+            var result = new Double[9];
 
             result[0] = matrix[0] * scale.X;
             result[1] = matrix[1] * scale.X;

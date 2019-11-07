@@ -9,16 +9,16 @@ namespace Arctron.Obj23dTiles
     /// </summary>
     public class B3dm
     {
-        internal const int Version = 1;
+        internal const Int32 Version = 1;
 
-        internal const int HeaderByteLength = 28;
+        internal const Int32 HeaderByteLength = 28;
 
-        private readonly List<byte> _glb;
+        private readonly List<Byte> _glb;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="glb">binary gltf model</param>
-        public B3dm(List<byte> glb)
+        public B3dm(List<Byte> glb)
         {
             _glb = glb;
         }
@@ -27,7 +27,7 @@ namespace Arctron.Obj23dTiles
         /// </summary>
         /// <param name="options">converting options</param>
         /// <returns></returns>
-        public byte[] Convert(Options options)
+        public Byte[] Convert(Options options)
         {
             if (options == null) options = new Options();
 
@@ -45,18 +45,18 @@ namespace Arctron.Obj23dTiles
                 + featureTableBinaryByteLength + batchTableJsonByteLength 
                 + batchTableBinaryByteLength + gltfByteLength;
 
-            var all = new List<byte>();
+            var all = new List<Byte>();
             // Header
             all.Add(System.Convert.ToByte('b'));
             all.Add(System.Convert.ToByte('3'));
             all.Add(System.Convert.ToByte('d'));
             all.Add(System.Convert.ToByte('m'));
-            all.AddRange(BitConverter.GetBytes((uint)Version));
-            all.AddRange(BitConverter.GetBytes((uint)byteLength));
-            all.AddRange(BitConverter.GetBytes((uint)featureTableJsonByteLength));
-            all.AddRange(BitConverter.GetBytes((uint)featureTableBinaryByteLength));
-            all.AddRange(BitConverter.GetBytes((uint)batchTableJsonByteLength));
-            all.AddRange(BitConverter.GetBytes((uint)batchTableBinaryByteLength));
+            all.AddRange(BitConverter.GetBytes((UInt32)Version));
+            all.AddRange(BitConverter.GetBytes((UInt32)byteLength));
+            all.AddRange(BitConverter.GetBytes((UInt32)featureTableJsonByteLength));
+            all.AddRange(BitConverter.GetBytes((UInt32)featureTableBinaryByteLength));
+            all.AddRange(BitConverter.GetBytes((UInt32)batchTableJsonByteLength));
+            all.AddRange(BitConverter.GetBytes((UInt32)batchTableBinaryByteLength));
 
             all.AddRange(featureTableJson);
             all.AddRange(featureTableBinary);

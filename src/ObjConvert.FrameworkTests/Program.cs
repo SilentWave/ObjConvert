@@ -10,7 +10,7 @@ namespace Arctron.ObjConvert.FrameworkTests
     class Program
     {
         
-        static void Main(string[] args)
+        static void Main(String[] args)
         {
             //Obj2GltfTests.TestConvert();
             //Test3dTile();
@@ -38,7 +38,7 @@ namespace Arctron.ObjConvert.FrameworkTests
             Obj23dTilesTests.WriteTilesetWithZip(objZipFile, "test", gisPosition);
 
             var mobjZipFile = @"testm.mobjr";
-            var tasks = new Task<string>[2];
+            var tasks = new Task<String>[2];
             tasks[0] = Task.Run(() =>
             Obj23dTilesTests.WriteMTilesetsWithZip(mobjZipFile, "testm", gisPosition));
             var mobjZipFile2 = @"testm2.mobjr";

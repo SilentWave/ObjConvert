@@ -9,33 +9,33 @@ namespace Arctron.Obj2Gltf.Geom
     {
         class Node
         {
-            public Node(int i, double x, double y)
+            public Node(Int32 i, Double x, Double y)
             {
                 Index = i;
                 X = x;
                 Y = y;
             }
-            public int Index { get; set; }
+            public Int32 Index { get; set; }
 
-            public double X { get; set; }
+            public Double X { get; set; }
 
-            public double Y { get; set; }
+            public Double Y { get; set; }
 
             public Node Prev { get; set; }
 
             public Node Next { get; set; }
 
-            public double? Z { get; set; }
+            public Double? Z { get; set; }
 
             public Node PrevZ { get; set; }
 
             public Node NextZ { get; set; }
 
-            public bool Steiner { get; set; }
+            public Boolean Steiner { get; set; }
         }
-        public static int[] Triangulate(IList<Vec2> positions, int[] holes)
+        public static Int32[] Triangulate(IList<Vec2> positions, Int32[] holes)
         {
-            var arr = new double[positions.Count * 2];
+            var arr = new Double[positions.Count * 2];
             for(var i = 0;i<positions.Count;i++)
             {
                 var pa = positions[i].ToArray();
@@ -45,10 +45,10 @@ namespace Arctron.Obj2Gltf.Geom
             return Earcut(arr, holes, 2).ToArray();
         }
 
-        private static double SignedArea(double[] data, int start, int end, int dim)
+        private static Double SignedArea(Double[] data, Int32 start, Int32 end, Int32 dim)
         {
-            double sum = 0;
-            for (int i = start, j = end - dim; i < end; i += dim)
+            Double sum = 0;
+            for (Int32 i = start, j = end - dim; i < end; i += dim)
             {
                 sum += (data[j] - data[i]) * (data[i + 1] + data[j + 1]);
                 j = i;
@@ -65,7 +65,7 @@ namespace Arctron.Obj2Gltf.Geom
             if (p.NextZ != null) p.NextZ.PrevZ = p.PrevZ;
         }
 
-        private static Node InsertNode(int index, double x, double y, Node last)
+        private static Node InsertNode(Int32 index, Double x, Double y, Node last)
         {
             var p = new Node(index, x, y);
             if (last == null)
@@ -89,12 +89,12 @@ namespace Arctron.Obj2Gltf.Geom
         /// <param name="p1"></param>
         /// <param name="p2"></param>
         /// <returns></returns>
-        private static bool Equal(Node p1, Node p2)
+        private static Boolean Equal(Node p1, Node p2)
         {
             return p1.X == p2.X && p1.Y == p2.Y;
         }
 
-        private static bool Intersects(Node p1, Node q1, Node p2, Node q2)
+        private static Boolean Intersects(Node p1, Node q1, Node p2, Node q2)
         {
             if (  ( Equal(p1, q1) && Equal(p2, q2) ) || (  Equal(p1, q2) && Equal(p2, q1) )　)
             {
@@ -110,7 +110,7 @@ namespace Arctron.Obj2Gltf.Geom
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        private static bool IntersectsPolygon(Node a, Node b)
+        private static Boolean IntersectsPolygon(Node a, Node b)
         {
             var p = a;
             do
@@ -128,14 +128,14 @@ namespace Arctron.Obj2Gltf.Geom
         /// <param name="a"></param>
         /// <param name="b"></param>
         /// <returns></returns>
-        private static bool LocallyInside(Node a, Node b)
+        private static Boolean LocallyInside(Node a, Node b)
         {
             return Area(a.Prev, a, a.Next) < 0 ?
                 Area(a, b, a.Next) >= 0 && Area(a, a.Prev, b) >= 0 :
                 Area(a, b, a.Prev) < 0 || Area(a, a.Next, b) < 0;
         }
 
-        private static bool MiddleInside(Node a, Node b)
+        private static Boolean MiddleInside(Node a, Node b)
         {
             var p = a;
             var inside = false;
@@ -183,15 +183,15 @@ namespace Arctron.Obj2Gltf.Geom
             return b2;
         }
 
-        private static bool PointInTriangle(double ax, double ay, double bx, double by,
-            double cx, double cy, double px, double py)
+        private static Boolean PointInTriangle(Double ax, Double ay, Double bx, Double by,
+            Double cx, Double cy, Double px, Double py)
         {
             return (cx - px) * (ay - py) - (ax - px) * (cy - py) >= 0 &&
            (ax - px) * (by - py) - (bx - px) * (ay - py) >= 0 &&
            (bx - px) * (cy - py) - (cx - px) * (by - py) >= 0;
         }
 
-        private static Node LinkedList(double[] data, int start, int end, int dim, bool clockWise)
+        private static Node LinkedList(Double[] data, Int32 start, Int32 end, Int32 dim, Boolean clockWise)
         {
             Node last = null;
             if (clockWise == (SignedArea(data, start, end, dim) > 0))
@@ -231,13 +231,13 @@ namespace Arctron.Obj2Gltf.Geom
             return leftMost;
         }
         // TODO:
-        private static Node EliminateHoles(double[] data, int[] holes, Node outerNode, int dim)
+        private static Node EliminateHoles(Double[] data, Int32[] holes, Node outerNode, Int32 dim)
         {
             //return outerNode;
             throw new NotImplementedException();
         }
 
-        private static bool IsEarHashed(Node ear, double minX, double minY, double size)
+        private static Boolean IsEarHashed(Node ear, Double minX, Double minY, Double size)
         {
             var a = ear.Prev;
             var b = ear;
@@ -283,7 +283,7 @@ namespace Arctron.Obj2Gltf.Geom
         /// </summary>
         /// <param name="ear"></param>
         /// <returns></returns>
-        private static bool IsEar(Node ear)
+        private static Boolean IsEar(Node ear)
         {
             var a = ear.Prev;
             var b = ear;
@@ -305,10 +305,10 @@ namespace Arctron.Obj2Gltf.Geom
             return true;
         }
 
-        private static int ZOrder(double x0, double y0, double minX, double minY, double size)
+        private static Int32 ZOrder(Double x0, Double y0, Double minX, Double minY, Double size)
         {
-            int x = (int)(32767 * (x0 - minX) / size);
-            int y = (int)(32767 * (y0 - minY) / size);
+            var x = (Int32)(32767 * (x0 - minX) / size);
+            var y = (Int32)(32767 * (y0 - minY) / size);
 
             x = (x | (x << 8)) & 0x00FF00FF;
             x = (x | (x << 4)) & 0x0F0F0F0F;
@@ -323,7 +323,7 @@ namespace Arctron.Obj2Gltf.Geom
             return x | (y << 1);
         }
 
-        private static double Area(Node p, Node q, Node r)
+        private static Double Area(Node p, Node q, Node r)
         {
             return (q.Y - p.Y) * (r.X - q.X) - (q.X - p.X) * (r.Y - q.Y);
         }
@@ -333,8 +333,8 @@ namespace Arctron.Obj2Gltf.Geom
             if (start == null) return start;
             if (end == null) end = start;
 
-            Node p = start;
-            var again = false;
+            var p = start;
+            Boolean again;
             do
             {
                 again = false;
@@ -357,7 +357,7 @@ namespace Arctron.Obj2Gltf.Geom
             return end;
         }
 
-        private static Node CureLocalIntersections(Node start, List<int> triangles, int dim)
+        private static Node CureLocalIntersections(Node start, List<Int32> triangles, Int32 dim)
         {
             var p = start;
             do
@@ -383,7 +383,7 @@ namespace Arctron.Obj2Gltf.Geom
             return p;
         }
 
-        private static bool IsValidDiagonal(Node a, Node b)
+        private static Boolean IsValidDiagonal(Node a, Node b)
         {
             return a.Next.Index != b.Index && a.Prev.Index != b.Index && !IntersectsPolygon(a, b) &&
                 LocallyInside(a, b) && LocallyInside(b, a) && MiddleInside(a, b);
@@ -397,7 +397,7 @@ namespace Arctron.Obj2Gltf.Geom
         /// <param name="minX"></param>
         /// <param name="minY"></param>
         /// <param name="size"></param>
-        private static void SplitEarcut(Node start, List<int> triangles, int dim, double minX, double minY, double size)
+        private static void SplitEarcut(Node start, List<Int32> triangles, Int32 dim, Double minX, Double minY, Double size)
         {
             // look for a valid diagonal that divides the polygon into two
             var a = start;
@@ -428,7 +428,7 @@ namespace Arctron.Obj2Gltf.Geom
             } while (a != start);
         }
 
-        private static void IndexCurve(Node start, double minX, double minY, double size)
+        private static void IndexCurve(Node start, Double minX, Double minY, Double size)
         {
             var p = start;
             do
@@ -451,32 +451,32 @@ namespace Arctron.Obj2Gltf.Geom
 
         private static Node SortLinked(Node list)
         {
-            int numMerges = 0, pSize = 0, qSize = 0, inSize = 1;
-            Node p = null, q = null, e = null, tail = null;
-
+            Int32 inSize = 1;
+            Int32 numMerges;
             do
             {
-                p = list;
+                var p = list;
                 list = null;
-                tail = null;
+                Node tail = null;
                 numMerges = 0;
 
-                while(p != null)
+                while (p != null)
                 {
                     numMerges++;
-                    q = p;
-                    pSize = 0;
-                    for(var i = 0; i < inSize; i++)
+                    var q = p;
+                    var pSize = 0;
+                    for (var i = 0; i < inSize; i++)
                     {
                         pSize++;
                         q = q.NextZ;
                         if (q == null) break;
                     }
 
-                    qSize = inSize;
+                    var qSize = inSize;
 
-                    while(pSize > 0 || (qSize > 0 && q != null))
+                    while (pSize > 0 || (qSize > 0 && q != null))
                     {
+                        Node e;
                         if (pSize == 0)
                         {
                             e = q;
@@ -529,8 +529,8 @@ namespace Arctron.Obj2Gltf.Geom
         /// <param name="minY"></param>
         /// <param name="size"></param>
         /// <param name="pass"></param>
-        private static void EarcutLinked(Node ear, List<int> triangles, 
-            int dim, double minX, double minY, double size, int pass=0)
+        private static void EarcutLinked(Node ear, List<Int32> triangles,
+            Int32 dim, Double minX, Double minY, Double size, Int32 pass =0)
         {
             if (ear == null) return;
 
@@ -541,13 +541,14 @@ namespace Arctron.Obj2Gltf.Geom
             {
                 IndexCurve(ear, minX, minY, size);
             }
-            Node stop = ear, prev = null, next = null;
+
+            Node stop = ear;
 
             // iterate through ears, slicing them one by one
             while (ear.Prev != ear.Next)
             {
-                prev = ear.Prev;
-                next = ear.Next;
+                var prev = ear.Prev;
+                var next = ear.Next;
 
                 if (sized ? IsEarHashed(ear, minX, minY, size) : IsEar(ear) )
                 {
@@ -590,13 +591,13 @@ namespace Arctron.Obj2Gltf.Geom
 
         }
 
-        private static List<int> Earcut(double[] data, int[] holes, int dim)
+        private static List<Int32> Earcut(Double[] data, Int32[] holes, Int32 dim)
         {
             var hasHoles = holes != null && holes.Length > 0;
             var outerLen = hasHoles ? holes[0] * dim : data.Length;
             var outerNode = LinkedList(data, 0, outerLen, dim, true);
 
-            var triangles = new List<int>();
+            var triangles = new List<Int32>();
 
             if (outerNode == null) return triangles;
 
@@ -605,18 +606,20 @@ namespace Arctron.Obj2Gltf.Geom
                 outerNode = EliminateHoles(data, holes, outerNode, dim);
             }
 
-            double minX = 0, minY = 0, maxX = 0, maxY = 0, x = 0, y = 0, size = 0;
+            Double minX = 0, minY = 0, size = 0;
 
             // if the shape is not too simple, we'll use z-order curve hash later; calculate polygon bbox
             if (data.Length > 80 * dim)
             {
+                Double maxX;
                 minX = maxX = data[0];
+                Double maxY;
                 minY = maxY = data[1];
 
                 for (var i = dim; i < outerLen; i += dim)
                 {
-                    x = data[i];
-                    y = data[i + 1];
+                    var x = data[i];
+                    var y = data[i + 1];
                     if (x < minX) minX = x;
                     if (y < minY) minY = y;
                     if (x > maxX) maxX = x;

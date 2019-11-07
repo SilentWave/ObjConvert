@@ -13,12 +13,12 @@ namespace Arctron.Obj23dTiles
     /// </summary>
     public static class GisUtil
     {
-        public static double LatitudeToMeters(double latDiff)
+        public static Double LatitudeToMeters(Double latDiff)
         {
             return latDiff / 0.000000157891;
         }
 
-        public static double LongitudeToMeters(double lonDiff, double lat)
+        public static Double LongitudeToMeters(Double lonDiff, Double lat)
         {
             return (lonDiff / 0.000000156785) * Math.Cos(lat);
         }
@@ -28,7 +28,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="meters"></param>
         /// <param name="latitude">in radian</param>
         /// <returns></returns>
-        public static double MetersToLongitude(double meters, double latitude)
+        public static Double MetersToLongitude(Double meters, Double latitude)
         {
             return meters * 0.000000156785 / Math.Cos(latitude);
         }
@@ -37,7 +37,7 @@ namespace Arctron.Obj23dTiles
         /// </summary>
         /// <param name="meters"></param>
         /// <returns></returns>
-        public static double MetersToLatituide(double meters)
+        public static Double MetersToLatituide(Double meters)
         {
             return meters * 0.000000157891;
         }
@@ -49,41 +49,41 @@ namespace Arctron.Obj23dTiles
             return LocalFrameToFixedFrame(origin, ellipsoid, firstAxis, secondAxis);
         }
 
-        private static Dictionary<string, Dictionary<string, string>> VectorProductLocalFrame
-             = new Dictionary<string, Dictionary<string, string>>
+        private static Dictionary<String, Dictionary<String, String>> VectorProductLocalFrame
+             = new Dictionary<String, Dictionary<String, String>>
              {
-                 {"up", new Dictionary<string, string>{
+                 {"up", new Dictionary<String, String>{
                      { "south", "east"}, {"north", "west"},
                      { "west", "south"}, { "east", "north"} } },
-                 { "down", new Dictionary<string, string>{
+                 { "down", new Dictionary<String, String>{
                      { "south", "west" }, { "north", "east" },
                      { "west", "north" }, { "east", "south" }  } },
 
-                 { "south", new Dictionary<string, string>
+                 { "south", new Dictionary<String, String>
                  {
                      { "up", "west" }, { "down", "east"},
                      { "west", "down" }, { "east", "up"}
                  } },
-                 { "north", new Dictionary<string, string>
+                 { "north", new Dictionary<String, String>
                  {
                      {"up", "east" }, {"down", "west"},
                      { "west", "up" }, { "east", "down" }
                  } },
 
-                 { "west", new Dictionary<string, string>
+                 { "west", new Dictionary<String, String>
                  {
                      { "up", "north" }, { "down", "south" },
                      { "north", "down" }, { "south", "up" }
                  } },
-                 { "east", new Dictionary<string, string>
+                 { "east", new Dictionary<String, String>
                  {
                      { "up", "south" }, { "down", "north" },
                      { "north", "up" }, { "south", "down" }
                  } }
              };
 
-        private static Dictionary<string, Vec3> DegeneratePositionLocalFrame =
-            new Dictionary<string, Vec3>
+        private static Dictionary<String, Vec3> DegeneratePositionLocalFrame =
+            new Dictionary<String, Vec3>
             {
                 { "north", new Vec3(-1, 0, 0) },
                 { "east",  new Vec3( 0, 1, 0) },
@@ -93,8 +93,8 @@ namespace Arctron.Obj23dTiles
                 { "down",  new Vec3( 0, 0,-1) }
             };
 
-        private static Dictionary<string, Vec3> ScratchCalculateCartesian =
-            new Dictionary<string, Vec3>
+        private static Dictionary<String, Vec3> ScratchCalculateCartesian =
+            new Dictionary<String, Vec3>
             {
                 { "north", new Vec3() },
                 { "east", new Vec3() },
@@ -113,7 +113,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="ellipsoid"></param>
         /// <returns></returns>
         private static Matrix4 LocalFrameToFixedFrame(
-            Vec3 origin, Ellipsoid ellipsoid, string firstAxis, string secondAxis)
+            Vec3 origin, Ellipsoid ellipsoid, String firstAxis, String secondAxis)
         {
             var thirdAxis = VectorProductLocalFrame[firstAxis][secondAxis];
             Vec3 scratchFirstCartesian, scratchSecondCartesian, scratchThirdCartesian;
@@ -173,7 +173,7 @@ namespace Arctron.Obj23dTiles
 
             }
 
-            var result = new double[16];
+            var result = new Double[16];
             result[0] = scratchFirstCartesian.X;
             result[1] = scratchFirstCartesian.Y;
             result[2] = scratchFirstCartesian.Z;
@@ -225,8 +225,8 @@ namespace Arctron.Obj23dTiles
 
         }
 
-        public static Vec3 CesiumFromRadians(double longitude, double latitude,
-            double height, Vec3 radiiSquared)
+        public static Vec3 CesiumFromRadians(Double longitude, Double latitude,
+            Double height, Vec3 radiiSquared)
         {
             var cosLatitude = Math.Cos(latitude);
             var scratchN = (new Vec3(
@@ -247,7 +247,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="latitude">latitude in radian</param>
         /// <param name="height">height in meter</param>
         /// <returns></returns>
-        public static Matrix4 Wgs84Transform(double longitude, double latitude, double height)
+        public static Matrix4 Wgs84Transform(Double longitude, Double latitude, Double height)
         {
             var wgs84RadiiSquared =  new Vec3(6378137.0 * 6378137.0, 
                 6378137.0 * 6378137.0, 6356752.3142451793 * 6356752.3142451793);
@@ -260,24 +260,24 @@ namespace Arctron.Obj23dTiles
 
     internal class HeadingPitchRoll
     {
-        public double Heading { get; set; }
+        public Double Heading { get; set; }
 
-        public double Pitch { get; set; }
+        public Double Pitch { get; set; }
 
-        public double Roll { get; set; }
+        public Double Roll { get; set; }
     }
     /// <summary>
     /// A set of 4-dimensional coordinates used to represent rotation in 3-dimensional space.
     /// </summary>
     internal class Quaternion
     {
-        public double X { get; set; }
+        public Double X { get; set; }
 
-        public double Y { get; set; }
+        public Double Y { get; set; }
 
-        public double Z { get; set; }
+        public Double Z { get; set; }
 
-        public double W { get; set; }
+        public Double W { get; set; }
 
         public static Quaternion Multiply(Quaternion left, Quaternion right)
         {
@@ -299,7 +299,7 @@ namespace Arctron.Obj23dTiles
             return new Quaternion { X = x, Y = y, Z = z, W = w };
         }
 
-        public static Quaternion FromAxisAngle(Vec3 axis, double angle)
+        public static Quaternion FromAxisAngle(Vec3 axis, Double angle)
         {
             var halfAngle = angle / 2.0;
             var s = Math.Sin(halfAngle);
@@ -341,37 +341,37 @@ namespace Arctron.Obj23dTiles
     public class Matrix4
     {
 
-        public double P00;
+        public Double P00;
 
-        public double P01;
+        public Double P01;
 
-        public double P02;
+        public Double P02;
 
-        public double P03;
+        public Double P03;
 
-        public double P10;
+        public Double P10;
 
-        public double P11;
+        public Double P11;
 
-        public double P12;
+        public Double P12;
 
-        public double P13;
+        public Double P13;
 
-        public double P20;
+        public Double P20;
 
-        public double P21;
+        public Double P21;
 
-        public double P22;
+        public Double P22;
 
-        public double P23;
+        public Double P23;
 
-        public double P30;
+        public Double P30;
 
-        public double P31;
+        public Double P31;
 
-        public double P32;
+        public Double P32;
 
-        public double P33;
+        public Double P33;
         /// <summary>
         /// Computes a Matrix4 instance from a translation, rotation, and scale (TRS)
         ///  representation with the rotation represented as a quaternion.
@@ -410,7 +410,7 @@ namespace Arctron.Obj23dTiles
             var m21 = 2.0 * (yz + xw);
             var m22 = -x2 - y2 + z2 + w2;
 
-            var result = new double[16];
+            var result = new Double[16];
 
             result[0]  = m00 * scaleX;
             result[1]  = m10 * scaleX;
@@ -506,7 +506,7 @@ namespace Arctron.Obj23dTiles
             var column3Row2 = left2 * right12 + left6 * right13 + left10 * right14 + left14 * right15;
             var column3Row3 = left3 * right12 + left7 * right13 + left11 * right14 + left15 * right15;
 
-            var result = new double[16];
+            var result = new Double[16];
             result[0]  = column0Row0;
             result[1]  = column0Row1;
             result[2]  = column0Row2;
@@ -545,7 +545,7 @@ namespace Arctron.Obj23dTiles
             };
         }
 
-        public double[] ToArray()
+        public Double[] ToArray()
         {
             return new[]
             {
@@ -556,7 +556,7 @@ namespace Arctron.Obj23dTiles
             };
         }
 
-        public override string ToString()
+        public override String ToString()
         {
             return String.Join(",", ToArray());
         }
@@ -581,13 +581,13 @@ namespace Arctron.Obj23dTiles
 
         public Vec3 OneOverRadiiSquared { get; }
 
-        public double MinimumRadius { get; }
+        public Double MinimumRadius { get; }
 
-        public double MaximumRadius { get; }
+        public Double MaximumRadius { get; }
 
-        public double CenterToleranceSquared { get; }
+        public Double CenterToleranceSquared { get; }
 
-        public double SquaredXOverSquaredZ { get; }
+        public Double SquaredXOverSquaredZ { get; }
 
         /// <summary>
         /// 
@@ -595,7 +595,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="x">The radius in the x direction.</param>
         /// <param name="y">The radius in the y direction.</param>
         /// <param name="z">The radius in the z direction.</param>
-        public Ellipsoid(double x, double y, double z)
+        public Ellipsoid(Double x, Double y, Double z)
         {
             Radii = new Vec3(x, y, z);
             RadiiSquared = new Vec3(x * x, y * y, z * z);
@@ -668,8 +668,8 @@ namespace Arctron.Obj23dTiles
         /// <param name="centerToleranceSquared">Tolerance for closeness to the center.</param>
         /// <returns></returns>
         private static Vec3? ScaleToGeodeticSurface(Vec3 cartesian,
-            Vec3 oneOverRadii, Vec3 oneOverRadiiSquared, 
-            double centerToleranceSquared)
+            Vec3 oneOverRadii, Vec3 oneOverRadiiSquared,
+            Double centerToleranceSquared)
         {
 
             var positionX = cartesian.X;
@@ -694,7 +694,7 @@ namespace Arctron.Obj23dTiles
             // If the position is near the center, the iteration will not converge.
             if (squaredNorm < centerToleranceSquared)
             {
-                return double.IsInfinity(ratio) ? default(Vec3?) : intersection;
+                return Double.IsInfinity(ratio) ? default(Vec3?) : intersection;
             }
 
             var oneOverRadiiSquaredX = oneOverRadiiSquared.X;
@@ -713,10 +713,10 @@ namespace Arctron.Obj23dTiles
             var lambda = (1.0 - ratio) * cartesian.GetLength() / (0.5 * gradient.GetLength());
             var correction = 0.0;
 
-            double xMultiplier;
-            double yMultiplier;
-            double zMultiplier;
-            double func;
+            Double xMultiplier;
+            Double yMultiplier;
+            Double zMultiplier;
+            Double func;
             do
             {
                 lambda -= correction;

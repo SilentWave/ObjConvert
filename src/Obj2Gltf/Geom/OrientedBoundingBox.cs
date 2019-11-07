@@ -64,12 +64,12 @@ namespace Arctron.Obj2Gltf.Geom
             var v2 = rotation.GetColumn(1);
             var v3 = rotation.GetColumn(2);
 
-            var u1 = double.MinValue; //-Number.MAX_VALUE;
-            var u2 = double.MinValue; //-Number.MAX_VALUE;
-            var u3 = double.MinValue; //-Number.MAX_VALUE;
-            var l1 = double.MaxValue; //Number.MAX_VALUE;
-            var l2 = double.MaxValue; //Number.MAX_VALUE;
-            var l3 = double.MaxValue; //Number.MAX_VALUE;
+            var u1 = Double.MinValue; //-Number.MAX_VALUE;
+            var u2 = Double.MinValue; //-Number.MAX_VALUE;
+            var u3 = Double.MinValue; //-Number.MAX_VALUE;
+            var l1 = Double.MaxValue; //Number.MAX_VALUE;
+            var l2 = Double.MaxValue; //Number.MAX_VALUE;
+            var l3 = Double.MaxValue; //Number.MAX_VALUE;
 
             for(var i = 0;i <length;i++)
             {

@@ -14,11 +14,11 @@ namespace Arctron.Gltf
         /// Tool that generated this glTF model.
         /// </summary>
         [JsonProperty("generator")]
-        public string Generator { get; set; }
+        public String Generator { get; set; }
         /// <summary>
         /// The glTF version of this asset.
         /// </summary>
         [JsonProperty("version")]
-        public string Version { get; set; }
+        public String Version { get; set; }
     }
 }

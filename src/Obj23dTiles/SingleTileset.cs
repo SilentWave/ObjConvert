@@ -21,19 +21,19 @@ namespace Arctron.Obj23dTiles
         /// additional properties
         /// </summary>
         [JsonProperty("properties")]
-        public Dictionary<string, object> Properties { get; set; }
+        public Dictionary<String, Object> Properties { get; set; }
         /// <summary>
         /// geometric errors
         /// </summary>
         [JsonProperty("geometricError")]
-        public double GeometricError { get; set; } = 200.0;
+        public Double GeometricError { get; set; } = 200.0;
         /// <summary>
         /// tile root (tileset.json or b3dm file)
         /// </summary>
         [JsonProperty("root")]
         public Tile Root { get; set; }
 
-        public void ResetGeometricErrors(double factor = 2.0)
+        public void ResetGeometricErrors(Double factor = 2.0)
         {
             if (Root == null) return;
             if (factor <= 1)
@@ -91,14 +91,14 @@ namespace Arctron.Obj23dTiles
 
                 boundingVolume = new BoundingVolume
                 {
-                    Region = new double[] { west, south, east, north, minHeight, maxHeight }
+                    Region = new Double[] { west, south, east, north, minHeight, maxHeight }
                 };
             }
             else if (options.UseBox)
             {
                 boundingVolume = new BoundingVolume
                 {
-                    Box = new double[] {
+                    Box = new Double[] {
                         offsetX, -offsetY, height / 2 + minHeight,       // center
                         tileWidth / 2, 0, 0,                 // width
                         0, tileHeight / 2, 0,                // depth
@@ -110,7 +110,7 @@ namespace Arctron.Obj23dTiles
             {
                 boundingVolume = new BoundingVolume
                 {
-                    Sphere = new double[]
+                    Sphere = new Double[]
                     {
                         offsetX, -offsetY, height / 2 + minHeight,
                         Math.Sqrt(tileWidth * tileWidth / 4 + tileHeight * tileHeight / 4 + height * height / 4)
@@ -149,7 +149,7 @@ namespace Arctron.Obj23dTiles
         /// geo transform
         /// </summary>
         [JsonProperty("transform")]
-        public double[] Transform { get; set; }
+        public Double[] Transform { get; set; }
         /// <summary>
         /// bounding
         /// </summary>
@@ -159,12 +159,12 @@ namespace Arctron.Obj23dTiles
         /// geo error
         /// </summary>
         [JsonProperty("geometricError")]
-        public double GeometricError { get; set; }
+        public Double GeometricError { get; set; }
         /// <summary>
         /// ADD or REPLACE
         /// </summary>
         [JsonProperty("refine")]
-        public string Refine { get; set; } // "ADD"
+        public String Refine { get; set; } // "ADD"
         /// <summary>
         /// tileset.json or b3dm file
         /// </summary>
@@ -176,13 +176,13 @@ namespace Arctron.Obj23dTiles
         [JsonProperty("children")]
         public List<Tile> Children { get; set; }
         [JsonIgnore]
-        public MinMax OriginalX { get; set; }
+        public DoubleRange OriginalX { get; set; }
         [JsonIgnore]
-        public MinMax OriginalY { get; set; }
+        public DoubleRange OriginalY { get; set; }
         [JsonIgnore]
-        public MinMax OriginalZ { get; set; }
+        public DoubleRange OriginalZ { get; set; }
 
-        public void ResetGeometricErrors(double factor=2.0)
+        public void ResetGeometricErrors(Double factor =2.0)
         {
             if (Children != null && GeometricError > 0)
             {
@@ -197,7 +197,7 @@ namespace Arctron.Obj23dTiles
             }
         }
 
-        public double GetBounding()
+        public Double GetBounding()
         {
             var x = (OriginalX.Max - OriginalX.Min);
             var y = (OriginalY.Max - OriginalY.Min);
@@ -221,7 +221,7 @@ namespace Arctron.Obj23dTiles
         /// </summary>
 
         [JsonProperty("url")]
-        public string Url { get; set; }        
+        public String Url { get; set; }        
     }
     /// <summary>
     /// asset definition
@@ -232,17 +232,17 @@ namespace Arctron.Obj23dTiles
         /// asset version
         /// </summary>
         [JsonProperty("version")]
-        public string Version { get; set; } = "0.0";
+        public String Version { get; set; } = "0.0";
         /// <summary>
         /// TilesetVersion
         /// </summary>
         [JsonProperty("tilesetVersion")]
-        public string TilesetVersion { get; set; } = "1.0.0-arctron";
+        public String TilesetVersion { get; set; } = "1.0.0-arctron";
         /// <summary>
         /// Up axis, Y or Z
         /// </summary>
         [JsonProperty("gltfUpAxis")]
-        public string GltfUpAxis { get; set; } = "Y";
+        public String GltfUpAxis { get; set; } = "Y";
         
     }
     /// <summary>
@@ -254,23 +254,23 @@ namespace Arctron.Obj23dTiles
         /// use region (west, south, east, north, minHeight, maxHeight)
         /// </summary>
         [JsonProperty("region")]
-        public double[] Region { get; set; }
+        public Double[] Region { get; set; }
         /// <summary>
         /// bounding box, 12
         /// </summary>
         [JsonProperty("box")]
-        public double[] Box { get; set; }
+        public Double[] Box { get; set; }
         /// <summary>
         /// bounding sphere, 4
         /// </summary>
         [JsonProperty("sphere")]
-        public double[] Sphere { get; set; }
+        public Double[] Sphere { get; set; }
     }
 
     public class TilesetRegionComparer : Comparer<SingleTileset>
     {
         private readonly TileRegionComparer _comparer = new TileRegionComparer();
-        public override int Compare(SingleTileset x0, SingleTileset y0)
+        public override Int32 Compare(SingleTileset x0, SingleTileset y0)
         {
             if (x0 == null || y0 == null) return 0;
             var xTile = x0.Root;
@@ -281,7 +281,7 @@ namespace Arctron.Obj23dTiles
             return TileRegionComparer.ContainCompare(xTile, yTile);
         }
 
-        private static Tile ToTile(SingleTileset tileset, string parentFolder)
+        private static Tile ToTile(SingleTileset tileset, String parentFolder)
         {
             var tile = new Tile
             {
@@ -303,7 +303,7 @@ namespace Arctron.Obj23dTiles
             return tile;
         }
 
-        public static List<Tile> SortTrees(List<SingleTileset> tilesets, string parentFolder)
+        public static List<Tile> SortTrees(List<SingleTileset> tilesets, String parentFolder)
         {
             var comparer = new TilesetRegionComparer();
             tilesets.Sort(comparer);
@@ -311,7 +311,7 @@ namespace Arctron.Obj23dTiles
             var ts0 = tilesets[tilesets.Count - 1];
             nodes.Add(ToTile(ts0, parentFolder));
             Tile parent = null;
-            Tile current = nodes[0];
+            var current = nodes[0];
             for(var i = tilesets.Count-1;i>0;i--)
             {
                 var j = i - 1;
@@ -354,7 +354,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="m1"></param>
         /// <param name="m2"></param>
         /// <returns></returns>
-        internal static double Percent(MinMax m1, MinMax m2)
+        internal static Double Percent(DoubleRange m1, DoubleRange m2)
         {
             var min = m1.Min;
             if (min > m2.Min) min = m2.Min;
@@ -384,13 +384,13 @@ namespace Arctron.Obj23dTiles
             return 0.0;
 
         }
-        private static int CompareXToY(double xMin, double xMax, double yMin, double yMax)
+        private static Int32 CompareXToY(Double xMin, Double xMax, Double yMin, Double yMax)
         {
             if (xMin >= yMin && xMax < yMax) return -1;
             if (xMin <= yMin && xMax > yMax) return 1;
             return 0;
         }
-        public override int Compare(Tile xTile, Tile yTile)
+        public override Int32 Compare(Tile xTile, Tile yTile)
         {
             var x = xTile.BoundingVolume;
             var y = yTile.BoundingVolume;
@@ -426,7 +426,7 @@ namespace Arctron.Obj23dTiles
 
         }
 
-        internal static int ContainCompare(Tile xTile, Tile yTile)
+        internal static Int32 ContainCompare(Tile xTile, Tile yTile)
         {
             var xVol = xTile.GetBounding();
             var yVol = yTile.GetBounding();

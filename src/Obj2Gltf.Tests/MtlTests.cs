@@ -1,21 +1,72 @@
 using System;
 using Xunit;
 using Arctron.Obj2Gltf.WaveFront;
+using System.Linq;
 
 namespace Arctron.Obj2Gltf.Tests
 {
     public class MtlTests
     {
         [Fact]
-        public void LoadMtl_Test()
+        public void Number_of_materials_should_match()
+        {
+            const String mtlStart = "newmtl";
+            var materialCount = 0;
+            var mtlFile = @"..\..\..\..\testassets\Office\model.mtl";
+            Assert.True(System.IO.File.Exists(mtlFile), "mtl file does not exist!");
+            using (var sr = System.IO.File.OpenText(mtlFile))
+            {
+                while (!sr.EndOfStream)
+                {
+                    var line = sr.ReadLine();
+                    if (line.StartsWith(mtlStart)) materialCount++;
+                }
+            }
+            var mtlParser = new MtlParser();
+            var mats = mtlParser.Parse(mtlFile);
+            Assert.True(mats.Count() == materialCount);
+        }
+
+        [Fact]
+        public void LoadMtl_should_be_globalization_independent()
         {
             var mtlFile = @"..\..\..\..\testassets\Office\model.mtl";
             Assert.True(System.IO.File.Exists(mtlFile), "mtl file does not exist!");
-            using (var mtlParser = new MtlParser(mtlFile))
+
+            var cultures = System.Globalization.CultureInfo.GetCultures(System.Globalization.CultureTypes.NeutralCultures);
+            foreach (var culture in cultures)
             {
-                var mats = mtlParser.GetMats();
-                Assert.True(mats.Count > 0);
-            }            
+                System.Threading.Thread.CurrentThread.CurrentCulture = culture;
+
+                var mtlParser = new MtlParser();
+                var mats = mtlParser.Parse(mtlFile);
+                Assert.True(mats.Any());
+                var mat = mats.Single(x => x.Name == "Mat");
+                Assert.True(mat.Diffuse.Color.Red == 0.80000001192093);
+                Assert.True(mat.Diffuse.Color.Green == 0.80000001192093);
+                Assert.True(mat.Diffuse.Color.Blue == 0.80000001192093);
+            }
         }
+
+        //[Fact]
+        //public void Convert_materials()
+        //{
+        //    var mtlFile = @"C:\Users\luigi.trabacchin\Desktop\testoutput\exported bueno canada.mtl";
+        //    Assert.True(System.IO.File.Exists(mtlFile), "mtl file does not exist!");
+        //    var mtlParser = new MtlParser();
+        //    var mats = mtlParser.Parse(mtlFile).Select(x => Obj2Gltf.Converter.ConvertMaterial(x, p => 0)).ToArray();
+        //    var asd = mats.Select(x => new { Index = Array.IndexOf(mats, x), Material = x })
+        //        .GroupBy(
+        //            x => new
+        //            {
+        //                r = x.Material.PbrMetallicRoughness.BaseColorFactor[0],
+        //                g = x.Material.PbrMetallicRoughness.BaseColorFactor[1],
+        //                b = x.Material.PbrMetallicRoughness.BaseColorFactor[2]
+        //            })
+        //        .OrderByDescending(x => x.Count())
+        //        .ToArray();
+        //    var lol = asd.First().Select(x => x.ToString()).ToArray();
+        //    Assert.True(mats.Any());
+        //}
     }
 }

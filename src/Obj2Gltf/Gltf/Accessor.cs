@@ -15,7 +15,7 @@ namespace Arctron.Gltf
         /// Optional user-defined name for this object.
         /// </summary>
         [JsonProperty("name")]
-        public string Name { get; set; }
+        public String Name { get; set; }
         /// <summary>
         /// The data type of components in the attribute.
         /// </summary>
@@ -26,19 +26,19 @@ namespace Arctron.Gltf
         /// with the number of bytes in the buffer view.
         /// </summary>
         [JsonProperty("count")]
-        public int Count { get; set; }
+        public Int32 Count { get; set; }
         /// <summary>
         /// Minimum value of each component in this attribute.
         /// </summary>
         [JsonProperty("min")]
         [JsonConverter(typeof(DoubleArrayJsonConverter))]
-        public double[] Min { get; set; }
+        public Double[] Min { get; set; }
         /// <summary>
         /// Maximum value of each component in this attribute.
         /// </summary>
         [JsonProperty("max")]
         [JsonConverter(typeof(DoubleArrayJsonConverter))]
-        public double[] Max { get; set; }
+        public Double[] Max { get; set; }
         /// <summary>
         /// Specifies if the attribute is a scalar, vector, or matrix.
         /// </summary>
@@ -49,11 +49,11 @@ namespace Arctron.Gltf
         /// The parent buffer view this accessor reads from.
         /// </summary>
         [JsonProperty("bufferView")]
-        public int BufferView { get; set; }
+        public Int32 BufferView { get; set; }
         /// <summary>
         /// The offset relative to the start of the parent `BufferView` in bytes.
         /// </summary>
         [JsonProperty("byteOffset")]
-        public int ByteOffset { get; set; }
+        public Int32 ByteOffset { get; set; }
     }
 }

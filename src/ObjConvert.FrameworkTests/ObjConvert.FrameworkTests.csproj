@@ -39,6 +39,10 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
+    <Reference Include="System.IO.Compression.FileSystem" />
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\net461\System.ValueTuple.dll</HintPath>
+    </Reference>
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -58,7 +62,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Obj23dTiles\Obj23dTiles.csproj">
-      <Project>{508b5fe8-026e-4802-a12d-bbabfb9761d0}</Project>
+      <Project>{508B5FE8-026E-4802-A12D-BBABFB9761D0}</Project>
       <Name>Obj23dTiles</Name>
     </ProjectReference>
     <ProjectReference Include="..\Obj2Gltf\Obj2Gltf.csproj">

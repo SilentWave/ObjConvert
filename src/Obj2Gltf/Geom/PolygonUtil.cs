@@ -4,54 +4,19 @@ using System.Text;
 
 namespace Arctron.Obj2Gltf.Geom
 {
-    public class BoundingBox2
-    {
-        public Vec2 Min { get; set; }
-
-        public Vec2 Max { get; set; }
-
-        public bool IsValid()
-        {
-            return Min.U < Max.U && Min.V < Max.V;
-        }
-
-        public bool IsIn(Vec2 p)
-        {
-            return p.U > Min.U && p.U < Max.U && p.V > Min.V && p.V < Max.V;
-        }
-
-        public static BoundingBox2 New()
-        {
-            return new BoundingBox2
-            {
-                Min = new Vec2(double.MaxValue, double.MaxValue),
-                Max = new Vec2(double.MinValue, double.MinValue)
-            };
-
-        }
-    }
-
-    public enum PolygonPointRes
-    {
-        Outside,
-        Inside,
-        Vetex,
-        Edge
-    }
-
     public class PolygonUtil
     {
         // 
-        private static bool IsIntersect(Vec2 ln1Start, Vec2 ln1End, Vec2 ln2Start, Vec2 ln2End)
+        private static Boolean IsIntersect(Vec2 ln1Start, Vec2 ln1End, Vec2 ln2Start, Vec2 ln2End)
         {
             //https://ideone.com/PnPJgb
             var A = ln1Start;
             var B = ln1End;
             var C = ln2Start;
             var D = ln2End;
-            Vec2 CmP = new Vec2(C.U - A.U, C.V - A.V);
-            Vec2 r = new Vec2(B.U - A.U, B.V - A.V);
-            Vec2 s = new Vec2(D.U - C.U, D.V - C.V);
+            var CmP = new Vec2(C.U - A.U, C.V - A.V);
+            var r = new Vec2(B.U - A.U, B.V - A.V);
+            var s = new Vec2(D.U - C.U, D.V - C.V);
 
             var CmPxr = CmP.U * r.V - CmP.V * r.U;
             var CmPxs = CmP.U * s.V - CmP.V * s.U;
@@ -99,11 +64,11 @@ namespace Arctron.Obj2Gltf.Geom
             //return u >= 0.0 && u <= 1.0;
         }
 
-        public static PolygonPointRes CrossTest(Vec2 p, IList<Vec2> polygon, double tol)
+        public static PolygonPointRes CrossTest(Vec2 p, IList<Vec2> polygon, Double tol)
         {
-            
-            double minX = double.MaxValue, minY = double.MaxValue, maxX = double.MinValue, maxY = double.MinValue;
-            var angleVs = new List<double>();
+
+            Double minX = Double.MaxValue, minY = Double.MaxValue, maxX = Double.MinValue, maxY = Double.MinValue;
+            var angleVs = new List<Double>();
             var vecX = new Vec2(1.0, 0);
             foreach(var v in polygon)
             {
@@ -150,7 +115,6 @@ namespace Arctron.Obj2Gltf.Geom
                 var anJ = angleVs[j];
                 if (j == 0)
                 {
-                    anJ += Math.PI * 2;
                 }
                 var diff1 = angleVs[j] - angleVs[i];
                 if (diff1 > diff)
@@ -186,7 +150,7 @@ namespace Arctron.Obj2Gltf.Geom
             return PolygonPointRes.Outside;
         }
 
-        private static double GetRayLength(Vec2 p, IList<Vec2> polygon)
+        private static Double GetRayLength(Vec2 p, IList<Vec2> polygon)
         {
             throw new NotImplementedException();
         }

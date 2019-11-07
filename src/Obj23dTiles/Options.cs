@@ -13,18 +13,18 @@ namespace Arctron.Obj23dTiles
         /// <summary>
         /// FeatureTableJson
         /// </summary>
-        public List<byte> FeatureTableJson { get; set; } = new List<byte>();
+        public List<Byte> FeatureTableJson { get; set; } = new List<Byte>();
         /// <summary>
         /// FeatureTableBinary
         /// </summary>
-        public List<byte> FeatureTableBinary { get; set; } = new List<byte>();
+        public List<Byte> FeatureTableBinary { get; set; } = new List<Byte>();
         /// <summary>
         /// BatchTableJson
         /// </summary>
-        public List<byte> BatchTableJson { get; set; } = new List<byte>();
+        public List<Byte> BatchTableJson { get; set; } = new List<Byte>();
         /// <summary>
         /// BatchTableBinary
         /// </summary>
-        public List<byte> BatchTableBinary { get; set; } = new List<byte>();
+        public List<Byte> BatchTableBinary { get; set; } = new List<Byte>();
     }
 }

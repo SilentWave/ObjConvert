@@ -18,22 +18,22 @@ namespace Arctron.Obj23dTiles
         /// if true, only one tileset.json file will be generated, 
         /// all the b3dm files will be root's first level children
         /// </summary>
-        public bool MergeTileJsonFiles { get; set; } = true;
+        public Boolean MergeTileJsonFiles { get; set; } = true;
         /// <summary>
         /// keep children b3dm tileset.json
         /// </summary>
-        public bool WriteChildTileJson { get; set; } = true;
+        public Boolean WriteChildTileJson { get; set; } = true;
         /// <summary>
         /// converted tiles folder
         /// </summary>
-        public string OutputFolder { get; set; }
+        public String OutputFolder { get; set; }
     }
     /// <summary>
     /// tileset converter
     /// </summary>
     public class TilesConverter
     {
-        private readonly string _objFolder;
+        private readonly String _objFolder;
         private readonly List<ObjModel> _objModels;
         private readonly GisPosition _gisPosition;
 
@@ -44,19 +44,19 @@ namespace Arctron.Obj23dTiles
         /// all the b3dm files will be root's first level children
         /// </summary>
         [Obsolete("Please use TilesOptions.MergeTileJsonFiles")]
-        public bool MergeTileJsonFiles { get; set; } = true;
+        public Boolean MergeTileJsonFiles { get; set; } = true;
         /// <summary>
         /// keep children b3dm tileset.json
         /// </summary>
         [Obsolete("Please use TilesOptions.WriteChildTileJson")]
-        public bool WriteChildTileJson { get; set; } = true;
+        public Boolean WriteChildTileJson { get; set; } = true;
         /// <summary>
         /// 
         /// </summary>
         /// <param name="objFolder">folder contains obj files</param>
         /// <param name="outputFolder">tiles output folder</param>
         /// <param name="gisPosition">where the tiles are</param>        
-        public TilesConverter(string objFolder, string outputFolder, 
+        public TilesConverter(String objFolder, String outputFolder,
             GisPosition gisPosition)
         {
             _objFolder = objFolder;
@@ -70,7 +70,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="objModels"></param>
         /// <param name="gisPosition"></param>
         /// <param name="options"></param>
-        public TilesConverter(string objFolder, ICollection<ObjModel> objModels, GisPosition gisPosition, TilesOptions options)
+        public TilesConverter(String objFolder, ICollection<ObjModel> objModels, GisPosition gisPosition, TilesOptions options)
         {
             _objFolder = objFolder;
             _gisPosition = gisPosition;
@@ -91,14 +91,14 @@ namespace Arctron.Obj23dTiles
             {
                 MergeTileJsonFiles = _options.MergeTileJsonFiles;
                 WriteChildTileJson = _options.WriteChildTileJson;
-            }            
+            }
         }
         /// <summary>
         /// run converter
         /// </summary>
         /// <param name="lod">whether generate hierarchical tileset.json</param>
         /// <returns></returns>
-        public string Run(bool lod = false)
+        public String Run(Boolean lod = false)
         {
             var outputDir = _options.OutputFolder;
             if (!Directory.Exists(outputDir))
@@ -125,17 +125,17 @@ namespace Arctron.Obj23dTiles
                 }
                 return CombineTilesets(objFolder, outputDir, gisPosition, _objModels.ToArray());
             }
-            
+
         }
 
-        internal static string MergeTilesets(string outputFolder, GisPosition gisPosition, bool lod, bool writeChildTilesetJson, params Task<SingleTileset>[] waitedTasks)
+        internal static String MergeTilesets(String outputFolder, GisPosition gisPosition, Boolean lod, Boolean writeChildTilesetJson, params Task<SingleTileset>[] waitedTasks)
         {
-            var west = double.MaxValue;
-            var south = double.MaxValue;
-            var north = double.MinValue;
-            var east = double.MinValue;
-            var minheight = double.MaxValue;
-            var maxheight = double.MinValue;
+            var west = Double.MaxValue;
+            var south = Double.MaxValue;
+            var north = Double.MinValue;
+            var east = Double.MinValue;
+            var minheight = Double.MaxValue;
+            var maxheight = Double.MinValue;
 
             var outputTileset = Path.Combine(outputFolder, "tileset.json");
             var outputPath = GenerateBatchedPath(outputFolder);
@@ -168,7 +168,7 @@ namespace Arctron.Obj23dTiles
                     var err = geometricError0 / 4.0;
                     if (json.Root != null)
                     {
-                        double? err0 = null;
+                        Double? err0 = null;
                         if (json.Root.OriginalX != null && json.Root.OriginalX.IsValid())
                         {
                             var errX = (json.Root.OriginalX.Max - json.Root.OriginalX.Min) / 10;
@@ -244,7 +244,7 @@ namespace Arctron.Obj23dTiles
                 {
                     BoundingVolume = new BoundingVolume
                     {
-                        Region = new double[] {
+                        Region = new Double[] {
                             west,south,
                             east, north,
                             minheight, maxheight }
@@ -271,9 +271,9 @@ namespace Arctron.Obj23dTiles
             return tilesetJsonPath;
         }
 
-        private static readonly string DataFolderName = "BatchedModels";
+        private static readonly String DataFolderName = "BatchedModels";
 
-        private static string GenerateBatchedPath(string outputFolder)
+        private static String GenerateBatchedPath(String outputFolder)
         {
             var outputPath = Path.Combine(outputFolder, DataFolderName);
             return outputPath;
@@ -287,8 +287,8 @@ namespace Arctron.Obj23dTiles
         /// <param name="writeChildTilesetJson">keep children b3dm tileset.json</param>
         /// <param name="objModels">obj file list</param>
         /// <returns></returns>
-        internal static string MergeTilesets(string objFolder, string outputFolder, 
-            GisPosition gisPosition, bool lod, bool writeChildTilesetJson, params ObjModel[] objModels)
+        internal static String MergeTilesets(String objFolder, String outputFolder,
+            GisPosition gisPosition, Boolean lod, Boolean writeChildTilesetJson, params ObjModel[] objModels)
         {
             var tasks = new Task<SingleTileset>[objModels.Length];
             var outputPath = GenerateBatchedPath(outputFolder);
@@ -311,8 +311,8 @@ namespace Arctron.Obj23dTiles
         /// <param name="writeChildTilesetJson">keep children b3dm tileset.json</param>
         /// <param name="objFiles">obj file list</param>
         /// <returns></returns>
-        internal static string MergeTilesets(string outputFolder, GisPosition gisPosition, bool lod, 
-            bool writeChildTilesetJson, params string[] objFiles)
+        internal static String MergeTilesets(String outputFolder, GisPosition gisPosition, Boolean lod,
+            Boolean writeChildTilesetJson, params String[] objFiles)
         {
             var tasks = new Task<SingleTileset>[objFiles.Length];
             var outputPath = GenerateBatchedPath(outputFolder);
@@ -328,15 +328,15 @@ namespace Arctron.Obj23dTiles
             return MergeTilesets(outputFolder, gisPosition, lod, writeChildTilesetJson, tasks);
         }
 
-        internal static string CombineTilesets(string outputFolder, GisPosition gisPosition,
-            params Task<string>[] waitedTasks)
+        internal static String CombineTilesets(String outputFolder, GisPosition gisPosition,
+            params Task<String>[] waitedTasks)
         {
-            var west = double.MaxValue;
-            var south = double.MaxValue;
-            var north = double.MinValue;
-            var east = double.MinValue;
-            var minheight = double.MaxValue;
-            var maxheight = double.MinValue;
+            var west = Double.MaxValue;
+            var south = Double.MaxValue;
+            var north = Double.MinValue;
+            var east = Double.MinValue;
+            var minheight = Double.MaxValue;
+            var maxheight = Double.MinValue;
 
             var outputTileset = Path.Combine(outputFolder, "tileset.json");
 
@@ -369,7 +369,7 @@ namespace Arctron.Obj23dTiles
                     Refine = json.Root.Refine,
                     Content = new TileContent
                     {
-                        Url = jsonFile.Substring(outputFolder.Length).TrimStart(new char[] { '\\', '/' }).Replace('\\', '/')
+                        Url = jsonFile.Substring(outputFolder.Length).TrimStart(new Char[] { '\\', '/' }).Replace('\\', '/')
                     }
                 });
             }
@@ -386,7 +386,7 @@ namespace Arctron.Obj23dTiles
                 {
                     BoundingVolume = new BoundingVolume
                     {
-                        Region = new double[] {
+                        Region = new Double[] {
                             west,south,
                             east, north,
                             minheight, maxheight }
@@ -407,10 +407,10 @@ namespace Arctron.Obj23dTiles
                 }));
             return tilesetJsonPath;
         }
-        internal static string CombineTilesets(string objFolder, string outputFolder, GisPosition gisPosition,
+        internal static String CombineTilesets(String objFolder, String outputFolder, GisPosition gisPosition,
             params ObjModel[] objModels)
         {
-            var tasks = new Task<string>[objModels.Length];
+            var tasks = new Task<String>[objModels.Length];
             for (var i = 0; i < objModels.Length; i++)
             {
                 var objFile = objModels[i];
@@ -430,10 +430,10 @@ namespace Arctron.Obj23dTiles
         /// <param name="gisPosition">where the tiles are</param>
         /// <param name="objFiles">obj file list</param>
         /// <returns></returns>
-        internal static string CombineTilesets(string outputFolder, GisPosition gisPosition,
-            params string[] objFiles)
+        internal static String CombineTilesets(String outputFolder, GisPosition gisPosition,
+            params String[] objFiles)
         {
-            var tasks = new Task<string>[objFiles.Length];
+            var tasks = new Task<String>[objFiles.Length];
             for (var i = 0; i < objFiles.Length; i++)
             {
                 var objFile = objFiles[i];
@@ -453,7 +453,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="outputPath">output folder</param>
         /// <param name="gisPosition">where the obj model positioned</param>
         /// <returns></returns>
-        internal static SingleTileset WriteTileset(string objFile, string outputPath, GisPosition gisPosition)
+        internal static SingleTileset WriteTileset(String objFile, String outputPath, GisPosition gisPosition)
         {
             var fileName = Path.GetFileNameWithoutExtension(objFile);
             var b3dmFile = Path.Combine(outputPath, fileName + ".b3dm");
@@ -469,13 +469,13 @@ namespace Arctron.Obj23dTiles
             return singleTileset;
         }
 
-        internal static SingleTileset WriteTileset(ObjModel objModel, 
-            string objFolder, string outputPath, GisPosition gisPosition)
+        internal static SingleTileset WriteTileset(ObjModel objModel,
+            String objFolder, String outputPath, GisPosition gisPosition)
         {
             var modelName = objModel.Name;
             var b3dmFile = Path.Combine(outputPath, modelName + ".b3dm");
-            var converter = new Converter(objModel, objFolder, 
-                new GltfOptions { Binary = true, Name = modelName, WithBatchTable = true });
+            var converter = new Converter(new ObjParser(), new MtlParser());
+            converter.Convert(objModel, objFolder, new GltfOptions { Binary = true, Name = modelName, WithBatchTable = true });
             var tilesetOptions = WriteB3dm(converter, b3dmFile);
             //tilesetOptions.TransHeight = 0;
             //tilesetOptions.MinHeight = 0;
@@ -488,7 +488,7 @@ namespace Arctron.Obj23dTiles
             return singleTileset;
         }
 
-        private static void WriteTilesetJsonFile(string jsonFilepath, SingleTileset singleTileset)
+        private static void WriteTilesetJsonFile(String jsonFilepath, SingleTileset singleTileset)
         {
             var tilesetJson = JsonConvert.SerializeObject(singleTileset, new JsonSerializerSettings
             {
@@ -504,7 +504,7 @@ namespace Arctron.Obj23dTiles
         /// <param name="outputPath">output folder</param>
         /// <param name="gisPosition">where the obj model positioned</param>
         /// <returns></returns>
-        public static string WriteTilesetFile(string objFile, string outputPath, 
+        public static String WriteTilesetFile(String objFile, String outputPath,
             GisPosition gisPosition)
         {
             var singleTileset = WriteTileset(objFile, outputPath, gisPosition);
@@ -521,8 +521,8 @@ namespace Arctron.Obj23dTiles
         /// <param name="outputPath">output folder</param>
         /// <param name="gisPosition">where the obj model positioned</param>
         /// <returns></returns>
-        public static string WriteTilesetFile(ObjModel objModel, 
-            string objFolder, string outputPath, GisPosition gisPosition)
+        public static String WriteTilesetFile(ObjModel objModel,
+            String objFolder, String outputPath, GisPosition gisPosition)
         {
             var singleTileset = WriteTileset(objModel, objFolder, outputPath, gisPosition);
 
@@ -532,14 +532,14 @@ namespace Arctron.Obj23dTiles
         }
 
         private static TilesetCreationOptions WriteB3dm(Converter converter,
-            string outputFile, Options options = null)
+            String outputFile, Options options = null)
         {
             if (options == null)
             {
                 options = new Options();
             }
-            
-            
+
+
             var glb = converter.GetGlb();
             var batchTableJson = converter.GetBatchTable();
             var length = batchTableJson.MaxPoint.Count;
@@ -548,32 +548,32 @@ namespace Arctron.Obj23dTiles
             {
                 if (options.FeatureTableJson == null)
                 {
-                    options.FeatureTableJson = new List<byte>();
+                    options.FeatureTableJson = new List<Byte>();
                 }
-                var featureTable = new FeatureTable() { BatchLength = (uint)length };
+                var featureTable = new FeatureTable() { BatchLength = (UInt32)length };
                 var featureTableJsonBuffer =
                 Converter.GetJsonBufferPadded(featureTable, boundary, 28);
                 options.FeatureTableJson.AddRange(featureTableJsonBuffer);
             }
-            List<byte> featureTableBinary;
+            List<Byte> featureTableBinary;
             if (options != null && options.FeatureTableBinary != null)
             {
                 featureTableBinary = options.FeatureTableBinary;
             }
             else
             {
-                featureTableBinary = new List<byte>();
+                featureTableBinary = new List<Byte>();
             }
             var batchTableJsonBuffer = Converter.GetJsonBufferPadded(batchTableJson, boundary);
             options.BatchTableJson = batchTableJsonBuffer.ToList();
-            List<byte> batchTableBinary;
+            List<Byte> batchTableBinary;
             if (options != null && options.BatchTableBinary != null)
             {
                 batchTableBinary = options.BatchTableBinary;
             }
             else
             {
-                batchTableBinary = new List<byte>();
+                batchTableBinary = new List<Byte>();
             }
 
             var b3dm = new B3dm(glb);
@@ -586,15 +586,15 @@ namespace Arctron.Obj23dTiles
             var tilesetPath = Path.Combine(folder, "tileset.json");
             var tilesetOptions = new TilesetCreationOptions();
             //var batchTableJson = json;
-            var minMaxX = new MinMax();
+            var minMaxX = new DoubleRange();
             Converter.UpdateMinMax(
                 batchTableJson.MaxPoint.Select(c => c[0]).Concat(
                     batchTableJson.MinPoint.Select(c => c[0])).ToArray(), minMaxX);
-            var minMaxY = new MinMax();
+            var minMaxY = new DoubleRange();
             Converter.UpdateMinMax(
                 batchTableJson.MaxPoint.Select(c => c[1]).Concat(
                     batchTableJson.MinPoint.Select(c => c[1])).ToArray(), minMaxY);
-            var minMaxZ = new MinMax();
+            var minMaxZ = new DoubleRange();
             Converter.UpdateMinMax(
                 batchTableJson.MaxPoint.Select(c => c[2]).Concat(
                     batchTableJson.MinPoint.Select(c => c[2])).ToArray(), minMaxZ);
@@ -626,11 +626,14 @@ namespace Arctron.Obj23dTiles
         /// <param name="outputFile">b3dm file path</param>
         /// <param name="options">converting options</param>
         /// <returns></returns>
-        public static TilesetCreationOptions WriteB3dm(string objFile,
-            string outputFile, Options options = null)
+        public static TilesetCreationOptions WriteB3dm(String objFile,
+            String outputFile, Options options = null)
         {
             var gltfOptions = new GltfOptions { Binary = true, WithBatchTable = true };
-            var converter = new Converter(objFile, gltfOptions);
+            var matParser = new MtlParser();
+            var objParser = new ObjParser();
+            var converter = new Converter(objParser, matParser);
+            //objFile, gltfOptions,
             return WriteB3dm(converter, outputFile, options);
         }
     }

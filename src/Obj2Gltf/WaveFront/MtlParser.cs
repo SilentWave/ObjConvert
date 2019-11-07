@@ -2,104 +2,48 @@
 using System.Collections.Generic;
 using System.Text;
 using System.IO;
+using System.Threading.Tasks;
+using System.Linq;
 
 namespace Arctron.Obj2Gltf.WaveFront
 {
-    public class MtlParser : IDisposable
+    public class MtlParser : IMtlParser
     {
-        private readonly string _mtlFile;
+        private const String newmtlPrefix = "newmtl";
+        private const String KaPrefix = "Ka";
+        private const String KdPrefix = "Kd";
+        private const String KsPrefix = "Ks";
+        private const String KePrefix = "Ke";
+        private const String dPrefix = "d";
+        private const String TrPrefix = "Tr";
+        private const String NsPrefix = "Ns";
+        private const String map_kaPrefix = "map_Ka";
+        private const String map_KdPrefix = "map_Kd";
 
-        private readonly StreamReader _reader;
-
-        private readonly string _parentFolder;
-
-        private Encoding _encoding;
-
-        private List<Material> _mats = new List<Material>();
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mtlFile">material file</param>
-        public MtlParser(string mtlFile):this(mtlFile, InitEncoding(mtlFile))
-        {
-            var encoding = InitEncoding(mtlFile);
-            _reader = new StreamReader(mtlFile, encoding);
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="mtlFile">material file</param>
-        /// <param name="encoding"></param>
-        public MtlParser(string mtlFile, Encoding encoding)
-        {
-            _mtlFile = mtlFile;
-            _parentFolder = Path.GetDirectoryName(mtlFile);
-            if (encoding == null)
-            {
-                encoding = Encoding.UTF8;
-            }
-            _reader = new StreamReader(mtlFile, encoding);
-        }
-
-        internal static Encoding InitEncoding(string mtlFile)
-        {
-            Encoding encoding = null;
-            using (var sr = new StreamReader(mtlFile, true))
-            {
-                sr.Read();
-                encoding = sr.CurrentEncoding;
-                sr.Close();
-            }
-            return encoding;
-        }
-
-        internal static Encoding InitEncoding(Stream stream)
-        {
-            Encoding encoding = null;
-            using (var sr = new StreamReader(stream, true))
-            {
-                sr.ReadLine();
-                encoding = sr.CurrentEncoding;
-                sr.Close();
-            }
-            return encoding;
-        }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="stream"></param>
-        public MtlParser(Stream stream) : this(stream, InitEncoding(stream)) { }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="stream"></param>
-        /// <param name="encoding"></param>
-        public MtlParser(Stream stream, Encoding encoding)
-        {
-            _reader = new StreamReader(stream, encoding);
-        }
-
-        private static Reflectivity GetReflectivity(string val)
+        private static Reflectivity GetReflectivity(String val)
         {
             if (String.IsNullOrEmpty(val)) return null;
-            var strs = val.Split(new char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
+            var strs = val.Split(new Char[] { ' ' }, StringSplitOptions.RemoveEmptyEntries);
             if (strs.Length == 3)
             {
-                var r = double.Parse(strs[0]);
-                var g = double.Parse(strs[1]);
-                var b = double.Parse(strs[2]);
+                var r = Double.Parse(strs[0], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+                var g = Double.Parse(strs[1], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+                var b = Double.Parse(strs[2], System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
 
-                return new Reflectivity(new Color(r, g, b));
+                return new Reflectivity(new FactorColor(r, g, b));
             }
 
             //TODO:
             return null;
         }
 
-        private Transparency GetTransparency(string str)
+        private static Transparency GetTransparency(String str)
         {
-            double val;
-            var ok = double.TryParse(str, out val);
+            var ok = Double.TryParse(
+                str,
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture.NumberFormat,
+                out var val);
             if (ok)
             {
                 return new Transparency { Factor = val };
@@ -107,143 +51,153 @@ namespace Arctron.Obj2Gltf.WaveFront
             return null;
         }
 
-        private Dissolve GetDissolve(string str)
+        private static Dissolve GetDissolve(String str)
         {
-            var strs = str.Split(new char[]{' ', '\t'}, StringSplitOptions.RemoveEmptyEntries);
-            double val;
-            var ok = double.TryParse(strs[strs.Length-1], out val);
+            var strs = str.Split(new Char[] { ' ', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+            var ok = Double.TryParse(
+                strs[strs.Length - 1],
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture.NumberFormat,
+                out var val);
             if (!ok) return null;
             if (val == 0)
             {
                 val = 1.0f;
             }
-            var d =new Dissolve{Factor = val};
+            var d = new Dissolve { Factor = val };
             if (strs[0] == "-halo")
             {
                 d.Halo = true;
             }
             return d;
         }
-        /// <summary>
-        /// get all mats in mtl file
-        /// </summary>
-        /// <returns></returns>
-        public ICollection<Material> GetMats()
+
+        public Task<Material[]> ParseAsync(String path, String searchPath = null, Encoding encoding = null)
         {
-            if (_mats.Count == 0)
+            if (searchPath == null) searchPath = System.IO.Path.GetDirectoryName(path);
+            return Task.Run(() =>
             {
-                var matStrs = new List<List<string>>();
-                while(!_reader.EndOfStream)
+                using (var file = File.OpenRead(path))
                 {
-                    var line = _reader.ReadLine().Trim();
-                    if (line.StartsWith("newmtl"))
-                    {
-                        matStrs.Add(new List<string> { line });
-                    }
-                    else if (matStrs.Count > 0)
-                    {
-                        matStrs[matStrs.Count - 1].Add(line);
-                    }
+                    return Parse(file, searchPath, encoding).ToArray();
                 }
-                foreach(var matS in matStrs)
-                {
-                    var m = new Material();
-                    foreach(var line in matS)
-                    {
-                        if (line.StartsWith("newmtl"))
-                        {
-                            var matName = line.Substring("newmtl".Length).Trim();
-                            m.Name = matName;
-                        }
-                        else if (line.StartsWith("Ka"))
-                        {
-                            var ka = line.Substring("Ka".Length).Trim();
-                            var r = GetReflectivity(ka);
-                            if (r != null)
-                            {
-                                m.Ambient = r;
-                            }
-                        }
-                        else if (line.StartsWith("Kd"))
-                        {
-                            var kd = line.Substring("Kd".Length).Trim();
-                            var r = GetReflectivity(kd);
-                            if (r != null)
-                            {
-                                m.Diffuse = r;
-                            }
-                        }
-                        else if (line.StartsWith("Ks"))
-                        {
-                            var ks = line.Substring("Ks".Length).Trim();
-                            var r = GetReflectivity(ks);
-                            if (r != null)
-                            {
-                                m.Specular = r;
-                            }
-                        }
-                        else if (line.StartsWith("Ke"))
-                        {
-                            var ks = line.Substring("Ke".Length).Trim();
-                            var r = GetReflectivity(ks);
-                            if (r != null)
-                            {
-                                m.Emissive = r;
-                            }
-                        }
-                        else if (line.StartsWith("d"))
-                        {
-                            var d = line.Substring("d".Length).Trim();
-                            m.Dissolve = GetDissolve(d);
-                        }
-                        else if (line.StartsWith("Tr"))
-                        {
-                            var tr = line.Substring("Tr".Length).Trim();
-                            m.Transparency = GetTransparency(tr);
-                        }
-                        else if (line.StartsWith("Ns"))
-                        {
-                            var ns = line.Substring("Ns".Length).Trim();
-                            if (ns.Contains("."))
-                            {
-                                var d = float.Parse(ns);
-                                m.SpecularExponent = (int)Math.Round(d);
-                            }
-                            else
-                            {
-                                m.SpecularExponent = int.Parse(ns);
-                            }                           
-                        }
-                        else if (line.StartsWith("map_Ka"))
-                        {
-                            var ma = line.Substring("map_Ka".Length).Trim();
-                            if (File.Exists(Path.Combine(_parentFolder, ma)))
-                            {
-                                m.AmbientTextureFile = ma;
-                            }
-                        }
-                        else if (line.StartsWith("map_Kd"))
-                        {
-                            var md = line.Substring("map_Kd".Length).Trim();
-                            if (File.Exists(Path.Combine(_parentFolder, md)))
-                            {
-                                m.DiffuseTextureFile = md;
-                            }
-                        }
-                    }
-                    _mats.Add(m);
-                }
-            }
-            return _mats;
+            });
         }
 
-        public void Dispose()
+        public Task<Material[]> ParseAsync(Stream stream, String searchPath, Encoding encoding = null)
+            => Task.Run(() => Parse(stream, searchPath, encoding).ToArray());
+
+        public Material[] Parse(String path, String searchPath = null, Encoding encoding = null)
         {
-            if (_reader != null)
+            using (var file = File.OpenRead(path))
             {
-                _reader.Close();                
+                if (searchPath == null) searchPath = System.IO.Path.GetDirectoryName(path);
+                return Parse(file, searchPath, encoding).ToArray();
             }
         }
-        
+
+        public IEnumerable<Material> Parse(Stream stream, String searchPath, Encoding encoding = null)
+        {
+            if (stream.Position != 0)
+            {
+                stream.Seek(0, SeekOrigin.Begin);
+            }
+            var reader = encoding != null
+                ? new StreamReader(stream, encoding)
+                : new StreamReader(stream);
+            using (reader)
+            {
+                Material currentMaterial = null;
+
+                while (!reader.EndOfStream)
+                {
+                    var line = reader.ReadLine().Trim();
+                    if (line.StartsWith(newmtlPrefix))
+                    {
+                        if (currentMaterial != null) yield return currentMaterial;
+                        currentMaterial = new Material
+                        {
+                            Name = line.Substring(newmtlPrefix.Length).Trim()
+                        };
+                    }
+                    else if (line.StartsWith(KaPrefix))
+                    {
+                        var ka = line.Substring(KaPrefix.Length).Trim();
+                        var r = GetReflectivity(ka);
+                        if (r != null)
+                        {
+                            currentMaterial.Ambient = r;
+                        }
+                    }
+                    else if (line.StartsWith(KdPrefix))
+                    {
+                        var kd = line.Substring(KdPrefix.Length).Trim();
+                        var r = GetReflectivity(kd);
+                        if (r != null)
+                        {
+                            currentMaterial.Diffuse = r;
+                        }
+                    }
+                    else if (line.StartsWith(KsPrefix))
+                    {
+                        var ks = line.Substring(KsPrefix.Length).Trim();
+                        var r = GetReflectivity(ks);
+                        if (r != null)
+                        {
+                            currentMaterial.Specular = r;
+                        }
+                    }
+                    else if (line.StartsWith(KePrefix))
+                    {
+                        var ks = line.Substring(KePrefix.Length).Trim();
+                        var r = GetReflectivity(ks);
+                        if (r != null)
+                        {
+                            currentMaterial.Emissive = r;
+                        }
+                    }
+                    else if (line.StartsWith(dPrefix))
+                    {
+                        var d = line.Substring(dPrefix.Length).Trim();
+                        currentMaterial.Dissolve = GetDissolve(d);
+                    }
+                    else if (line.StartsWith(TrPrefix))
+                    {
+                        var tr = line.Substring(TrPrefix.Length).Trim();
+                        currentMaterial.Transparency = GetTransparency(tr);
+                    }
+                    else if (line.StartsWith(NsPrefix))
+                    {
+                        var ns = line.Substring(NsPrefix.Length).Trim();
+                        if (ns.Contains("."))
+                        {
+                            var d = Single.Parse(ns, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+                            currentMaterial.SpecularExponent = (Int32)Math.Round(d);
+                        }
+                        else
+                        {
+                            currentMaterial.SpecularExponent = Int32.Parse(ns, System.Globalization.NumberStyles.Any, System.Globalization.CultureInfo.InvariantCulture.NumberFormat);
+                        }
+                    }
+                    else if (line.StartsWith(map_kaPrefix))
+                    {
+                        var ma = line.Substring(map_kaPrefix.Length).Trim();
+                        if (File.Exists(Path.Combine(searchPath, ma)))
+                        {
+                            currentMaterial.AmbientTextureFile = ma;
+                        }
+                    }
+                    else if (line.StartsWith(map_KdPrefix))
+                    {
+                        var md = line.Substring(map_KdPrefix.Length).Trim();
+                        if (File.Exists(Path.Combine(searchPath, md)))
+                        {
+                            currentMaterial.DiffuseTextureFile = md;
+                        }
+                    }
+                }
+                if (currentMaterial != null) yield return currentMaterial;
+            }
+        }
     }
 }

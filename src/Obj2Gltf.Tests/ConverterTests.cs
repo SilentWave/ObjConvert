@@ -8,22 +8,24 @@ namespace Arctron.Obj2Gltf.Tests
 {
     public class ConverterTests
     {
-        private static string TestObjFile = @"..\..\..\..\testassets\Office\model.obj";
+        private static String TestObjPath = @"..\..\..\..\testassets\Office\model.obj";
 
         static void CheckObjFiles()
         {
-            Assert.True(File.Exists(TestObjFile), "Obj File does not exist!");
+            Assert.True(File.Exists(TestObjPath), "Obj File does not exist!");
         }
         [Fact]
         public void TestConvertGltf()
         {
             var name = "model";
-            CheckObjFiles();            
-
-            var converter = new Converter(TestObjFile, new GltfOptions());
-            var outputFile = name+".gltf";
-            converter.Run();
-            converter.WriteFile(outputFile);
+            CheckObjFiles();
+            var options = new GltfOptions();
+            var mtlParser = new WaveFront.MtlParser();
+            var objParser = new WaveFront.ObjParser();
+            var converter = new Converter(objParser, mtlParser);
+            var outputFile = name + ".gltf";
+            var (model, _) = converter.Convert(TestObjPath, options);
+            converter.WriteFile(model, false, outputFile);
             Assert.True(File.Exists(outputFile));
         }
 
@@ -33,13 +35,14 @@ namespace Arctron.Obj2Gltf.Tests
             var name = "model";
             CheckObjFiles();
 
-            var objParser = new WaveFront.ObjParser(TestObjFile);
-            var objModel = objParser.GetModel();
+            var mtlParser = new WaveFront.MtlParser();
+            var objParser = new WaveFront.ObjParser();
+            var objModel = objParser.Parse(TestObjPath);
 
-            var converter = new Converter(objModel, Path.GetDirectoryName(TestObjFile), new GltfOptions { Name = "model" });
+            var converter = new Converter(objParser, mtlParser);
             var outputFile = name + ".gltf";
-            converter.Run();
-            converter.WriteFile(outputFile);
+            var (model, buffers) = converter.Convert(objModel, Path.GetDirectoryName(TestObjPath), new GltfOptions { Name = "model" });
+            converter.WriteFile(model, false, outputFile, buffers);
             Assert.True(File.Exists(outputFile));
         }
 
@@ -49,11 +52,14 @@ namespace Arctron.Obj2Gltf.Tests
             var name = "model";
 
             CheckObjFiles();
-            var objFile = TestObjFile;
-            var converter = new Converter(objFile, new GltfOptions { Binary = true });
+            var objFile = TestObjPath;
+            var options = new GltfOptions { Binary = true };
+            var mtlParser = new WaveFront.MtlParser();
+            var objParser = new WaveFront.ObjParser();
+            var converter = new Converter(objParser, mtlParser);
             var outputFile = $"{name}.glb";
-            converter.Run();
-            converter.WriteFile(outputFile);
+            var (model, buffers) = converter.Convert(objFile, options);
+            converter.WriteFile(model, true, outputFile, buffers);
             Assert.True(System.IO.File.Exists(outputFile));
         }
     }

@@ -21,10 +21,9 @@ namespace Arctron.ObjConvert.FrameworkTests
         /// <param name="outputDir">导出的文件夹路径</param>
         /// <param name="gisPosition">GIS坐标</param>
         /// <returns></returns>
-        public static string WriteTileset(string objFile, string modelName,
-            string outputDir, GisPosition gisPosition)
+        public static String WriteTileset(String objFile, String modelName,
+            String outputDir, GisPosition gisPosition)
         {
-            var name = modelName;
             if (!Directory.Exists(outputDir))
             {
                 Directory.CreateDirectory(outputDir);
@@ -32,7 +31,7 @@ namespace Arctron.ObjConvert.FrameworkTests
             return TilesConverter.WriteTilesetFile(objFile, outputDir, gisPosition);
         }
 
-        public static string WriteTilesetWithZip(string objZipFile, string outputDir, GisPosition gisPosition)
+        public static String WriteTilesetWithZip(String objZipFile, String outputDir, GisPosition gisPosition)
         {
             var name = Path.GetFileNameWithoutExtension(objZipFile);
             var unzipDir = Path.Combine(Path.GetDirectoryName(objZipFile), name);
@@ -61,9 +60,9 @@ namespace Arctron.ObjConvert.FrameworkTests
             }
 
         }
-        
 
-        public static string WriteMTilesetsWithZip(string objZipFile, string outputDir, GisPosition gisPosition)
+
+        public static String WriteMTilesetsWithZip(String objZipFile, String outputDir, GisPosition gisPosition)
         {
             var name = Path.GetFileNameWithoutExtension(objZipFile);
             var unzipDir = Path.Combine(Path.GetDirectoryName(objZipFile), name);
@@ -84,7 +83,7 @@ namespace Arctron.ObjConvert.FrameworkTests
 
         }
 
-        public static string MergeMTilesetsWithZip(string objZipFile, string outputDir, GisPosition gisPosition, bool lod)
+        public static String MergeMTilesetsWithZip(String objZipFile, String outputDir, GisPosition gisPosition, Boolean lod)
         {
             var name = Path.GetFileNameWithoutExtension(objZipFile);
             var unzipDir = Path.Combine(Path.GetDirectoryName(objZipFile), name);
@@ -105,7 +104,7 @@ namespace Arctron.ObjConvert.FrameworkTests
 
         }
 
-        public static string WriteMTilesets(string objFolder, string outputDir, GisPosition gisPosition, bool merge=false)
+        public static String WriteMTilesets(String objFolder, String outputDir, GisPosition gisPosition, Boolean merge = false)
         {
             var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition) { MergeTileJsonFiles = merge };
             return tileConverter.Run();
@@ -114,7 +113,7 @@ namespace Arctron.ObjConvert.FrameworkTests
             //return tilesetJson;
         }
 
-        public static string MergeMTilesets(string objFolder, string outputDir, GisPosition gisPosition, bool lod)
+        public static String MergeMTilesets(String objFolder, String outputDir, GisPosition gisPosition, Boolean lod)
         {
             var tileConverter = new TilesConverter(objFolder, outputDir, gisPosition);
             return tileConverter.Run(lod);
@@ -123,7 +122,7 @@ namespace Arctron.ObjConvert.FrameworkTests
             //return tilesetJson;
         }
 
-        public static string SplitObjAndMergeMTilesetsWithZip(string objZipFile, string outputDir, GisPosition gisPosition, int splitLevel = 2)
+        public static String SplitObjAndMergeMTilesetsWithZip(String objZipFile, String outputDir, GisPosition gisPosition, Int32 splitLevel = 2)
         {
             var name = Path.GetFileNameWithoutExtension(objZipFile);
             var unzipDir = Path.Combine(Path.GetDirectoryName(objZipFile), name);
@@ -145,14 +144,11 @@ namespace Arctron.ObjConvert.FrameworkTests
                     throw new FileNotFoundException("Obj file not found", objFile);
                 }
                 var tilesOpts = new TilesOptions { MergeTileJsonFiles = true, OutputFolder = outputDir, WriteChildTileJson = false };
-                using (var objParser = new Obj2Gltf.WaveFront.ObjParser(objFile))
-                {
-                    var objModel = objParser.GetModel();
-                    var objModels = objModel.Split(splitLevel);
-                    var tilesConverter = new TilesConverter(unzipDir, objModels, gisPosition, tilesOpts);
-                    return tilesConverter.Run();
-                }
-                    
+                var objParser = new Obj2Gltf.WaveFront.ObjParser();
+                var objModel = objParser.Parse(objFile);
+                var objModels = objModel.Split(splitLevel);
+                var tilesConverter = new TilesConverter(unzipDir, objModels, gisPosition, tilesOpts);
+                return tilesConverter.Run();
             }
             finally
             {
@@ -161,14 +157,14 @@ namespace Arctron.ObjConvert.FrameworkTests
 
         }
 
-        public static void ExtractZipFile(string archiveFilenameIn, string outFolder)
+        public static void ExtractZipFile(String archiveFilenameIn, String outFolder)
         {
-            string password = String.Empty;
+            var password = String.Empty;
 
             ZipFile zf = null;
             try
             {
-                FileStream fs = File.OpenRead(archiveFilenameIn);
+                var fs = File.OpenRead(archiveFilenameIn);
                 zf = new ZipFile(fs);
                 if (!String.IsNullOrEmpty(password))
                 {
@@ -185,19 +181,19 @@ namespace Arctron.ObjConvert.FrameworkTests
                     // Optionally match entrynames against a selection list here to skip as desired.
                     // The unpacked length is available in the zipEntry.Size property.
 
-                    byte[] buffer = new byte[4096];     // 4K is optimum
+                    var buffer = new Byte[4096];     // 4K is optimum
                     Stream zipStream = zf.GetInputStream(zipEntry);
 
                     // Manipulate the output filename here as desired.
-                    string fullZipToPath = Path.Combine(outFolder, entryFileName);
-                    string directoryName = Path.GetDirectoryName(fullZipToPath);
+                    var fullZipToPath = Path.Combine(outFolder, entryFileName);
+                    var directoryName = Path.GetDirectoryName(fullZipToPath);
                     if (directoryName.Length > 0)
                         Directory.CreateDirectory(directoryName);
 
                     // Unzip file in buffered chunks. This is just as fast as unpacking to a buffer the full size
                     // of the file, but does not waste memory.
                     // The "using" will close the stream even if an exception occurs.
-                    using (FileStream streamWriter = File.Create(fullZipToPath))
+                    using (var streamWriter = File.Create(fullZipToPath))
                     {
                         StreamUtils.Copy(zipStream, streamWriter, buffer);
                     }

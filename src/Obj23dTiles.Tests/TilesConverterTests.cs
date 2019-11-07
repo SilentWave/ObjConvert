@@ -11,9 +11,9 @@ namespace Arctron.Obj23dTiles.Tests
 {
     public class TilesConverterTests
     {
-        private static string TestObjFile = @"..\..\..\..\testassets\Office\model.obj";
+        private static String TestObjFile = @"..\..\..\..\testassets\Office\model.obj";
 
-        private static string MOfficeFolder = @"..\..\..\..\testassets\mOffice";
+        private static String MOfficeFolder = @"..\..\..\..\testassets\mOffice";
 
         static void CheckObjFiles()
         {
@@ -43,20 +43,20 @@ namespace Arctron.Obj23dTiles.Tests
             {
                 Directory.CreateDirectory(outputDir);
             }
-            var objParser = new Obj2Gltf.WaveFront.ObjParser(TestObjFile);
-            var objModel = objParser.GetModel();
+            var objParser = new Obj2Gltf.WaveFront.ObjParser();
+            var objModel = objParser.Parse(TestObjFile);
 
             var gisPosition = new GisPosition();
             TilesConverter.WriteTilesetFile(objModel, Path.GetDirectoryName(TestObjFile), outputDir, gisPosition);
             Assert.True(File.Exists(Path.Combine(outputDir, "tileset.json")));
         }
 
-        public static void ExtractZipFile(string archiveFilenameIn, string password, string outFolder)
+        public static void ExtractZipFile(String archiveFilenameIn, String password, String outFolder)
         {
             ZipFile zf = null;
             try
             {
-                FileStream fs = File.OpenRead(archiveFilenameIn);
+                var fs = File.OpenRead(archiveFilenameIn);
                 zf = new ZipFile(fs);
                 if (!String.IsNullOrEmpty(password))
                 {
@@ -68,24 +68,24 @@ namespace Arctron.Obj23dTiles.Tests
                     {
                         continue;           // Ignore directories
                     }
-                    String entryFileName = zipEntry.Name;
+                    var entryFileName = zipEntry.Name;
                     // to remove the folder from the entry:- entryFileName = Path.GetFileName(entryFileName);
                     // Optionally match entrynames against a selection list here to skip as desired.
                     // The unpacked length is available in the zipEntry.Size property.
 
-                    byte[] buffer = new byte[4096];     // 4K is optimum
-                    Stream zipStream = zf.GetInputStream(zipEntry);
+                    var buffer = new Byte[4096];     // 4K is optimum
+                    var zipStream = zf.GetInputStream(zipEntry);
 
                     // Manipulate the output filename here as desired.
-                    String fullZipToPath = Path.Combine(outFolder, entryFileName);
-                    string directoryName = Path.GetDirectoryName(fullZipToPath);
+                    var fullZipToPath = Path.Combine(outFolder, entryFileName);
+                    var directoryName = Path.GetDirectoryName(fullZipToPath);
                     if (directoryName.Length > 0)
                         Directory.CreateDirectory(directoryName);
 
                     // Unzip file in buffered chunks. This is just as fast as unpacking to a buffer the full size
                     // of the file, but does not waste memory.
                     // The "using" will close the stream even if an exception occurs.
-                    using (FileStream streamWriter = File.Create(fullZipToPath))
+                    using (var streamWriter = File.Create(fullZipToPath))
                     {
                         StreamUtils.Copy(zipStream, streamWriter, buffer);
                     }
@@ -110,7 +110,7 @@ namespace Arctron.Obj23dTiles.Tests
             Assert.True(Directory.Exists(folder), "Input folder does not exist!");
             var outputDir = "BatchTests";
             var files = Directory.GetFiles(folder); // obj Files are zipped with mtl files
-            foreach(var f in files)
+            foreach (var f in files)
             {
                 var name = Path.GetFileNameWithoutExtension(f);
                 var dir = Path.Combine(folder, name);
@@ -124,21 +124,21 @@ namespace Arctron.Obj23dTiles.Tests
                 TransHeight = 0
             };
             var objFiles = Directory.GetFiles(folder, "*.obj", SearchOption.AllDirectories);
-            var tasks = new Task<string>[objFiles.Length];
-            for(var i = 0;i<objFiles.Length;i++)
+            var tasks = new Task<String>[objFiles.Length];
+            for (var i = 0; i < objFiles.Length; i++)
             {
                 var objFile = objFiles[i];
                 var dd = Path.GetDirectoryName(objFile);
-                
+
                 var name = "Batched" + Path.GetFileNameWithoutExtension(dd);
                 var outFolder = Path.Combine(outputDir, name);
                 Directory.CreateDirectory(outFolder);
                 tasks[i] = Task.Run(() => TilesConverter.WriteTilesetFile(objFile, outFolder, gisPosition));
             }
             Task.WaitAll(tasks);
-            var strs = new List<string>();
+            var strs = new List<String>();
             var tilesetListFile = Path.Combine(outputDir, "tileset.txt");
-            foreach(var t in tasks)
+            foreach (var t in tasks)
             {
                 var res = t.Result;
                 var name = Path.GetFileNameWithoutExtension(res);
@@ -148,7 +148,7 @@ namespace Arctron.Obj23dTiles.Tests
             }
             using (var sw = new StreamWriter(tilesetListFile, true, System.Text.Encoding.UTF8))
             {
-                foreach(var s in strs)
+                foreach (var s in strs)
                 {
                     sw.WriteLine(s);
                 }
@@ -190,14 +190,14 @@ namespace Arctron.Obj23dTiles.Tests
             var gisPosition = new GisPosition();
 
             var objModels = new List<Obj2Gltf.WaveFront.ObjModel>();
-            foreach(var objFile in Directory.GetFiles(objFolder, "*.obj"))
+            foreach (var objFile in Directory.GetFiles(objFolder, "*.obj"))
             {
-                var op = new Obj2Gltf.WaveFront.ObjParser(objFile);
-                var om = op.GetModel();
+                var op = new Obj2Gltf.WaveFront.ObjParser();
+                var om = op.Parse(objFile);
                 objModels.Add(om);
             }
 
-            var tileConverter = new TilesConverter(objFolder, objModels, 
+            var tileConverter = new TilesConverter(objFolder, objModels,
                 gisPosition, new TilesOptions { OutputFolder = outputDir, MergeTileJsonFiles = false });
             var tilesetJson = tileConverter.Run();
 
@@ -239,13 +239,13 @@ namespace Arctron.Obj23dTiles.Tests
             var objModels = new List<Obj2Gltf.WaveFront.ObjModel>();
             foreach (var objFile in Directory.GetFiles(objFolder, "*.obj"))
             {
-                var op = new Obj2Gltf.WaveFront.ObjParser(objFile);
-                var om = op.GetModel();
+                var op = new Obj2Gltf.WaveFront.ObjParser();
+                var om = op.Parse(objFile);
                 objModels.Add(om);
             }
 
 
-            var tileConverter = new TilesConverter(objFolder, objModels, 
+            var tileConverter = new TilesConverter(objFolder, objModels,
                 gisPosition, new TilesOptions { OutputFolder = outputDir, MergeTileJsonFiles = true });
             var tilesetJson = tileConverter.Run(lod);
 
@@ -261,8 +261,8 @@ namespace Arctron.Obj23dTiles.Tests
             {
                 Directory.CreateDirectory(outputDir);
             }
-            var objParser = new Obj2Gltf.WaveFront.ObjParser(TestObjFile);
-            var objModel = objParser.GetModel();
+            var objParser = new Obj2Gltf.WaveFront.ObjParser();
+            var objModel = objParser.Parse(TestObjFile);
             var gisPosition = new GisPosition();
             var lod = false;
 
@@ -280,7 +280,7 @@ namespace Arctron.Obj23dTiles.Tests
         public void TestIntBytes()
         {
             var i = 1;
-            uint ii = 1;
+            UInt32 ii = 1;
             var iBytes = BitConverter.GetBytes(i);
             var iiBytes = BitConverter.GetBytes(ii);
             if (!BitConverter.IsLittleEndian)
