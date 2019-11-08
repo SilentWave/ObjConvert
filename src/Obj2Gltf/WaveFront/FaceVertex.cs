@@ -61,7 +61,6 @@ namespace Arctron.Obj2Gltf.WaveFront
                 return $"{V}/{T}";
             }
             return $"{V}";
-
         }
 
         public Boolean Equals(FaceVertex other)

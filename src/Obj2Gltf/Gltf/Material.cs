@@ -27,7 +27,7 @@ namespace Arctron.Gltf
         /// The emissive color of the material.
         /// </summary>
         [JsonProperty("emissiveFactor")]
-        public Double[] EmissiveFactor { get; set; } // = new double[] { 0, 0, 0 };
+        public Double[] EmissiveFactor { get; set; }
         /// <summary>
         /// The alpha rendering mode of the material.
         ///

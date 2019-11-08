@@ -49,19 +49,10 @@ namespace Arctron.Obj2Gltf.WaveFront
             {
                 writer.WriteLine($"mtllib {MatFilename}");
             }
-            var vs = String.Join(Environment.NewLine, Vertices.Select(v => $"v {v.X} {v.Y} {v.Z}"));
-            writer.WriteLine(vs);
-            writer.Flush();
-            var ts = String.Join(Environment.NewLine, Uvs.Select(t => $"vt {t.U} {t.V}"));
-            writer.WriteLine(ts);
-            writer.Flush();
-            var ns = String.Join(Environment.NewLine, Normals.Select(n => $"vn {n.X} {n.Y} {n.Z}"));
-            writer.WriteLine(ns);
-            writer.Flush();
-            foreach (var g in Geometries)
-            {
-                g.Write(writer);
-            }
+            foreach (var v in Vertices) writer.WriteLine($"v {v.X} {v.Y} {v.Z}");
+            foreach (var t in Uvs) writer.WriteLine($"vt {t.U} {t.V}");
+            foreach (var n in Normals) writer.WriteLine($"vn {n.X} {n.Y} {n.Z}");
+            foreach (var g in Geometries) g.Write(writer);
         }
         /// <summary>
         /// 
@@ -152,7 +143,7 @@ namespace Arctron.Obj2Gltf.WaveFront
         private Geometry AddGeo(Geometry g, GeomBox box,
             List<Int32> pnts, List<Int32> normals, List<Int32> uvs)
         {
-            var gg = new Geometry { Id = g.Id };
+            var gg = new Geometry(g.Id);
 
             var pntList = box.Pnts; // new List<int>(); // 
             var normList = box.Norms; // new List<int>(); // 
@@ -246,11 +237,9 @@ namespace Arctron.Obj2Gltf.WaveFront
                 uvDict.Add(t, index + 1);
             }
 
-
             foreach (var f in g.Faces)
             {
-                var ff = new Face { MatName = f.MatName };
-
+                var ff = new Face(f.MatName);
                 foreach (var t in f.Triangles)
                 {
                     var v1 = GetVertex(t.V1, pntDict, normDict, uvDict);
@@ -259,7 +248,6 @@ namespace Arctron.Obj2Gltf.WaveFront
                     var fv = new FaceTriangle(v1, v2, v3);
                     ff.Triangles.Add(fv);
                 }
-
                 gg.Faces.Add(ff);
             }
 
@@ -410,11 +398,12 @@ namespace Arctron.Obj2Gltf.WaveFront
         public Geometry[] GetOrAddGeometries(params String[] names)
         {
             var results = new List<Geometry>();
-            foreach(var name in names)
+            foreach (var name in names)
             {
                 if (_Geometries.ContainsKey(name)) { results.Add(_Geometries[name]); }
-                else { 
-                    var newGeom = new Geometry() { Id = name };
+                else
+                {
+                    var newGeom = new Geometry(name);
                     _Geometries.Add(name, newGeom);
                     results.Add(newGeom);
                 }

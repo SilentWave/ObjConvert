@@ -14,7 +14,7 @@ namespace Arctron.Obj2Gltf
     /// </summary>
     /// <param name="texturePath">The path where the texture can be found</param>
     /// <returns>The texture index (zero based)</returns>
-    public delegate Int32 GetOrAddTexture(GltfModel gltfModel, String texturePath);
+    public delegate Int32 GetOrAddTexture(String texturePath);
 
     /// <summary>
     /// obj2gltf converter
@@ -59,18 +59,19 @@ namespace Arctron.Obj2Gltf
         {
             if (objModel == null) throw new ArgumentNullException(nameof(objModel));
             options = options ?? new GltfOptions();
-            var bufferState = new BufferState(options.WithBatchTable);
-
+            var bufferState = new BufferState();
 
             var gltfModel = new GltfModel();
             gltfModel.Scenes.Add(new Scene());
+            gltfModel.Materials.AddRange(objModel.Materials.Select(x => ConvertMaterial(x, t => GetTextureIndex(gltfModel, t))));
             var u32IndicesEnabled = RequiresUint32Indices(objModel);
             var meshes = objModel.Geometries.ToArray();
             var meshesLength = meshes.Length;
             for (var i = 0; i < meshesLength; i++)
             {
                 var mesh = meshes[i];
-                var meshIndex = AddMesh(gltfModel, objModel, bufferState, mesh, u32IndicesEnabled, options);
+                if (!mesh.Faces.Any()) continue;
+                var meshIndex = AddMesh(gltfModel, objModel, bufferState, mesh, u32IndicesEnabled);
                 AddNode(gltfModel, mesh.Id, meshIndex, null);
             }
 
@@ -121,17 +122,6 @@ namespace Arctron.Obj2Gltf
                 File.WriteAllText(outputFile, json);
             }
         }
-
-        ///// <summary>
-        ///// get batch table if batch table enabled
-        ///// </summary>
-        ///// <returns></returns>
-        //public BatchTable GetBatchTable()
-        //{
-        //    if (gltfModel == null) Convert();
-        //    return buffers.BatchTableJson;
-        //}
-
 
         private static String ToJson(Object model)
         {
@@ -289,10 +279,6 @@ namespace Arctron.Obj2Gltf
             AddBufferView(gltfModel, bufferState.NormalBuffers, bufferState.NormalAccessors.ToArray(), 12, 0x8892);
             AddBufferView(gltfModel, bufferState.UvBuffers, bufferState.UvAccessors.ToArray(), 8, 0x8892); // ARRAY_BUFFER
             AddBufferView(gltfModel, bufferState.IndexBuffers, bufferState.IndexAccessors.ToArray(), null, 0x8893); // ELEMENT_ARRAY_BUFFER
-            if (options.WithBatchTable)
-            {
-                AddBufferView(gltfModel, bufferState.BatchIdBuffers, bufferState.BatchIdAccessors.ToArray(), 0, 0x8892);
-            }
 
             var buffers = new List<Byte>();
             foreach (var b in bufferState.PositionBuffers)
@@ -310,13 +296,6 @@ namespace Arctron.Obj2Gltf
             foreach (var b in bufferState.IndexBuffers)
             {
                 buffers.AddRange(b);
-            }
-            if (options.WithBatchTable)
-            {
-                foreach (var b in bufferState.BatchIdBuffers)
-                {
-                    buffers.AddRange(b);
-                }
             }
             PaddingBuffers(buffers);
             return buffers;
@@ -512,7 +491,7 @@ namespace Arctron.Obj2Gltf
             return AddTexture(gltfModel, path);
         }
 
-        public static Gltf.Material ConvertMaterial(GltfModel gltfModel, WaveFront.Material mat, GetOrAddTexture getOrAddTextureFunction)
+        public static Gltf.Material ConvertMaterial(WaveFront.Material mat, GetOrAddTexture getOrAddTextureFunction)
         {
             var roughnessFactor = ConvertTraditional2MetallicRoughness(mat);
 
@@ -550,13 +529,12 @@ namespace Arctron.Obj2Gltf
             var hasTexture = !String.IsNullOrEmpty(mat.DiffuseTextureFile);
             if (hasTexture)
             {
-                var index = getOrAddTextureFunction(gltfModel, mat.DiffuseTextureFile);
+                var index = getOrAddTextureFunction(mat.DiffuseTextureFile);
                 gMat.PbrMetallicRoughness.BaseColorTexture = new TextureReferenceInfo
                 {
                     Index = index
                 };
             }
-
 
             if (mat.Emissive != null && mat.Emissive.Color != null)
             {
@@ -589,9 +567,9 @@ namespace Arctron.Obj2Gltf
 
         #region Meshes
 
-        private Int32 AddMesh(GltfModel gltfModel, ObjModel objModel, BufferState buffer, Geometry mesh, Boolean uint32Indices, GltfOptions options)
+        private Int32 AddMesh(GltfModel gltfModel, ObjModel objModel, BufferState buffer, Geometry mesh, Boolean uint32Indices)
         {
-            var ps = AddVertexAttributes(gltfModel, objModel, buffer, mesh, uint32Indices, options);
+            var ps = AddVertexAttributes(gltfModel, objModel, buffer, mesh, uint32Indices);
 
             var m = new Mesh
             {
@@ -630,15 +608,14 @@ namespace Arctron.Obj2Gltf
                                                     ObjModel objModel,
                                                     BufferState buffers,
                                                     Geometry mesh,
-                                                    Boolean uint32Indices,
-                                                    GltfOptions options)
+                                                    Boolean uint32Indices)
         {
             var facesGroup = mesh.Faces.GroupBy(c => c.MatName);
             var faces = new List<Face>();
             foreach (var fg in facesGroup)
             {
                 var matName = fg.Key;
-                var f = new Face { MatName = matName };
+                var f = new Face(matName);
                 foreach (var ff in fg)
                 {
                     f.Triangles.AddRange(ff.Triangles);
@@ -653,9 +630,6 @@ namespace Arctron.Obj2Gltf
             var hasUvs = faces.Any(c => c.Triangles.Any(d => d.V1.T > 0));
             var hasNormals = faces.Any(c => c.Triangles.Any(d => d.V1.N > 0));
 
-            var vertices = objModel.Vertices;
-            var normals = objModel.Normals;
-            var uvs = objModel.Uvs;
 
             // Vertex attributes are shared by all primitives in the mesh
             var name0 = mesh.Id;
@@ -669,6 +643,10 @@ namespace Arctron.Obj2Gltf
                 {
                     faceName = name0 + "_" + index;
                 }
+                var materialIndex = GetMaterialIndexOrDefault(gltfModel, objModel, f.MatName);
+                var material = objModel.Materials[materialIndex];
+                var materialHasTexture = material.DiffuseTextureFile != null;
+
                 DoubleRange vmmX = new DoubleRange(), vmmY = new DoubleRange(), vmmZ = new DoubleRange();
                 DoubleRange nmmX = new DoubleRange(), nmmY = new DoubleRange(), nmmZ = new DoubleRange();
                 DoubleRange tmmX = new DoubleRange(), tmmY = new DoubleRange();
@@ -688,94 +666,112 @@ namespace Arctron.Obj2Gltf
 
                 // f is a primitive
                 var iList = new List<Int32>(f.Triangles.Count * 3 * 2); // primitive indices
-                foreach (var t in f.Triangles)
+                foreach (var triangle in f.Triangles)
                 {
-                    var v1Index = t.V1.V - 1;
-                    var v2Index = t.V2.V - 1;
-                    var v3Index = t.V3.V - 1;
-                    var v1 = vertices[v1Index];
-                    var v2 = vertices[v2Index];
-                    var v3 = vertices[v3Index];
+                    var v1Index = triangle.V1.V - 1;
+                    var v2Index = triangle.V2.V - 1;
+                    var v3Index = triangle.V3.V - 1;
+                    var v1 = objModel.Vertices[v1Index];
+                    var v2 = objModel.Vertices[v2Index];
+                    var v3 = objModel.Vertices[v3Index];
                     UpdateMinMax(new[] { v1.X, v2.X, v3.X }, vmmX);
                     UpdateMinMax(new[] { v1.Y, v2.Y, v3.Y }, vmmY);
                     UpdateMinMax(new[] { v1.Z, v2.Z, v3.Z }, vmmZ);
 
                     Vec3 n1 = new Vec3(), n2 = new Vec3(), n3 = new Vec3();
-                    if (t.V1.N > 0) // hasNormals
+                    if (triangle.V1.N > 0) // hasNormals
                     {
-                        var n1Index = t.V1.N - 1;
-                        var n2Index = t.V2.N - 1;
-                        var n3Index = t.V3.N - 1;
-                        n1 = normals[n1Index];
-                        n2 = normals[n2Index];
-                        n3 = normals[n3Index];
+                        var n1Index = triangle.V1.N - 1;
+                        var n2Index = triangle.V2.N - 1;
+                        var n3Index = triangle.V3.N - 1;
+                        n1 = objModel.Normals[n1Index];
+                        n2 = objModel.Normals[n2Index];
+                        n3 = objModel.Normals[n3Index];
                         UpdateMinMax(new[] { n1.X, n2.X, n3.X }, nmmX);
                         UpdateMinMax(new[] { n1.Y, n2.Y, n3.Y }, nmmY);
                         UpdateMinMax(new[] { n1.Z, n2.Z, n3.Z }, nmmZ);
                     }
+
                     Vec2 t1 = new Vec2(), t2 = new Vec2(), t3 = new Vec2();
-                    if (t.V1.T > 0) // hasUvs
+                    if (materialHasTexture)
                     {
-                        var t1Index = t.V1.T - 1;
-                        var t2Index = t.V2.T - 1;
-                        var t3Index = t.V3.T - 1;
-                        t1 = uvs[t1Index];
-                        t2 = uvs[t2Index];
-                        t3 = uvs[t3Index];
-                        UpdateMinMax(new[] { t1.U, t2.U, t3.U }, tmmX);
-                        UpdateMinMax(new[] { 1 - t1.V, 1 - t2.V, 1 - t3.V }, tmmY);
+                        if (triangle.V1.T > 0) // hasUvs
+                        {
+                            var t1Index = triangle.V1.T - 1;
+                            var t2Index = triangle.V2.T - 1;
+                            var t3Index = triangle.V3.T - 1;
+                            t1 = objModel.Uvs[t1Index];
+                            t2 = objModel.Uvs[t2Index];
+                            t3 = objModel.Uvs[t3Index];
+                            UpdateMinMax(new[] { t1.U, t2.U, t3.U }, tmmX);
+                            UpdateMinMax(new[] { 1 - t1.V, 1 - t2.V, 1 - t3.V }, tmmY);
+                        }
                     }
 
-
-                    var v1Str = t.V1.ToString();
+                    var v1Str = triangle.V1.ToString();
                     if (!FaceVertexCache.ContainsKey(v1Str))
                     {
                         FaceVertexCache.Add(v1Str, FaceVertexCount++);
 
-                        vList++; vs.AddRange(v1.ToFloatBytes());
-                        if (t.V1.N > 0) // hasNormals
+                        vList++; 
+                        vs.AddRange(v1.ToFloatBytes());
+                        if (triangle.V1.N > 0) // hasNormals
                         {
-                            nList++; ns.AddRange(n1.ToFloatBytes());
+                            nList++;
+                            ns.AddRange(n1.ToFloatBytes());
                         }
-                        if (t.V1.T > 0) // hasUvs
+                        if (materialHasTexture)
                         {
-                            tList++; ts.AddRange(new Vec2(t1.U, 1 - t1.V).ToFloatBytes());
+                            if (triangle.V1.T > 0) // hasUvs
+                            {
+                                tList++;
+                                ts.AddRange(new Vec2(t1.U, 1 - t1.V).ToFloatBytes());
+                            }
                         }
-
                     }
 
-                    var v2Str = t.V2.ToString();
+                    var v2Str = triangle.V2.ToString();
                     if (!FaceVertexCache.ContainsKey(v2Str))
                     {
                         FaceVertexCache.Add(v2Str, FaceVertexCount++);
 
-                        vList++; vs.AddRange(v2.ToFloatBytes());
-                        if (t.V2.N > 0) // hasNormals
+                        vList++; 
+                        vs.AddRange(v2.ToFloatBytes());
+                        if (triangle.V2.N > 0) // hasNormals
                         {
-                            nList++; ns.AddRange(n2.ToFloatBytes());
+                            nList++; 
+                            ns.AddRange(n2.ToFloatBytes());
                         }
-                        if (t.V2.T > 0) // hasUvs
+                        if (materialHasTexture)
                         {
-                            tList++; ts.AddRange(new Vec2(t2.U, 1 - t2.V).ToFloatBytes());
+                            if (triangle.V2.T > 0) // hasUvs
+                            {
+                                tList++; 
+                                ts.AddRange(new Vec2(t2.U, 1 - t2.V).ToFloatBytes());
+                            }
                         }
-
                     }
 
-                    var v3Str = t.V3.ToString();
+                    var v3Str = triangle.V3.ToString();
                     if (!FaceVertexCache.ContainsKey(v3Str))
                     {
                         FaceVertexCache.Add(v3Str, FaceVertexCount++);
 
-                        vList++; vs.AddRange(v3.ToFloatBytes());
-                        if (t.V3.N > 0) // hasNormals
+                        vList++;
+                        vs.AddRange(v3.ToFloatBytes());
+                        if (triangle.V3.N > 0) // hasNormals
                         {
-                            nList++; ns.AddRange(n3.ToFloatBytes());
+                            nList++;
+                            ns.AddRange(n3.ToFloatBytes());
                         }
-                        if (t.V3.T > 0) // hasUvs
+                        if (materialHasTexture)
                         {
-                            tList++; ts.AddRange(new Vec2(t3.U, 1 - t3.V).ToFloatBytes());
+                            if (triangle.V3.T > 0) // hasUvs
+                            {
+                                tList++;
+                                ts.AddRange(new Vec2(t3.U, 1 - t3.V).ToFloatBytes());
+                            }
                         }
-
                     }
 
                     // Vertex Indices
@@ -796,10 +792,7 @@ namespace Arctron.Obj2Gltf
                             FaceVertexCache[v2Str]
                         });
                     }
-
                 }
-
-                var materialIndex = GetMaterialIndexOrDefault(gltfModel, objModel, f.MatName);
 
                 var atts = new Dictionary<String, Int32>();
 
@@ -817,12 +810,6 @@ namespace Arctron.Obj2Gltf
                 atts.Add("POSITION", accessorIndex);
                 buffers.PositionBuffers.Add(vs.ToArray());
                 buffers.PositionAccessors.Add(accessorIndex);
-
-                if (options.WithBatchTable)
-                {
-                    buffers.BatchTableJson.MaxPoint.Add(accessorVertex.Max);
-                    buffers.BatchTableJson.MinPoint.Add(accessorVertex.Min);
-                }
 
                 if (nList > 0) //hasNormals)
                 {
@@ -842,51 +829,33 @@ namespace Arctron.Obj2Gltf
                     buffers.NormalAccessors.Add(accessorIndex);
                 }
 
-                if (tList > 0) //hasUvs)
+                if (materialHasTexture)
                 {
-                    accessorIndex = gltfModel.Accessors.Count;
-                    var accessorUv = new Accessor
+                    if (tList > 0) //hasUvs)
                     {
-                        Min = new Double[] { tmmX.Min, tmmY.Min },
-                        Max = new Double[] { tmmX.Max, tmmY.Max },
-                        Type = AccessorType.VEC2,
-                        Count = tList,
-                        ComponentType = ComponentType.F32,
-                        Name = faceName + "_texcoords"
-                    };
-                    gltfModel.Accessors.Add(accessorUv);
-                    atts.Add("TEXCOORD_0", accessorIndex);
-                    buffers.UvBuffers.Add(ts.ToArray());
-                    buffers.UvAccessors.Add(accessorIndex);
-                }
-                else
-                {
-                    var gMat = gltfModel.Materials[materialIndex];
-                    if (gMat.PbrMetallicRoughness.BaseColorTexture != null)
-                    {
-                        gMat.PbrMetallicRoughness.BaseColorTexture = null;
+                        accessorIndex = gltfModel.Accessors.Count;
+                        var accessorUv = new Accessor
+                        {
+                            Min = new Double[] { tmmX.Min, tmmY.Min },
+                            Max = new Double[] { tmmX.Max, tmmY.Max },
+                            Type = AccessorType.VEC2,
+                            Count = tList,
+                            ComponentType = ComponentType.F32,
+                            Name = faceName + "_texcoords"
+                        };
+                        gltfModel.Accessors.Add(accessorUv);
+                        atts.Add("TEXCOORD_0", accessorIndex);
+                        buffers.UvBuffers.Add(ts.ToArray());
+                        buffers.UvAccessors.Add(accessorIndex);
                     }
-                }
-
-
-                if (options.WithBatchTable)
-                {
-                    var batchIdCount = vList;
-                    accessorIndex = AddBatchIdAttribute(
-                        gltfModel,
-                        buffers.CurrentBatchId,
-                        batchIdCount, faceName + "_batchId");
-                    atts.Add("_BATCHID", accessorIndex);
-                    var batchIds = new List<Byte>();
-                    for (var i = 0; i < batchIdCount; i++)
+                    else
                     {
-                        batchIds.AddRange(BitConverter.GetBytes((UInt16)buffers.CurrentBatchId));
+                        var gMat = gltfModel.Materials[materialIndex];
+                        if (gMat.PbrMetallicRoughness.BaseColorTexture != null)
+                        {
+                            gMat.PbrMetallicRoughness.BaseColorTexture = null;
+                        }
                     }
-                    buffers.BatchIdBuffers.Add(batchIds.ToArray());
-                    buffers.BatchIdAccessors.Add(accessorIndex);
-                    buffers.BatchTableJson.BatchIds.Add((UInt16)buffers.CurrentBatchId);
-                    buffers.BatchTableJson.Names.Add(faceName);
-                    buffers.CurrentBatchId++;
                 }
 
 
@@ -938,7 +907,7 @@ namespace Arctron.Obj2Gltf
                 }
                 else
                 {
-                    var gMat = ConvertMaterial(gltfModel, objMaterial, GetTextureIndex);
+                    var gMat = ConvertMaterial(objMaterial, t => GetTextureIndex(gltfModel, t));
                     materialIndex = AddMaterial(gltfModel, gMat);
                 }
             }

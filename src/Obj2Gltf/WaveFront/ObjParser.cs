@@ -11,8 +11,18 @@ namespace Arctron.Obj2Gltf.WaveFront
     /// </summary>
     public class ObjParser
     {
-        private const String Comment = "#";
-        private const String MtlLibStat = "mtllib";
+        private static class Statements
+        {
+            public const String Comment = "#";
+            public const String MtlLib = "mtllib";
+            public const String Vertex = "v";
+            public const String VectorNormal = "vn";
+            public const String VectorTexture = "vt";
+            public const String Group = "g";
+            public const String UseMaterial = "usemtl";
+            public const String Face = "f";
+        }
+
 
         private static FaceVertex GetVertex(String vStr)
         {
@@ -63,55 +73,55 @@ namespace Arctron.Obj2Gltf.WaveFront
             using (_reader)
             {
                 var currentMaterialName = "default";
-                var currentGeometries =  model.GetOrAddGeometries("default");
+                var currentGeometries = model.GetOrAddGeometries("default");
                 Face currentFace = null;
 
                 while (!_reader.EndOfStream)
                 {
                     var line = _reader.ReadLine().Trim();
                     if (String.IsNullOrEmpty(line)) continue;
-                    if (line.StartsWith(Comment)) continue;
-                    if (StartWith(line, MtlLibStat))
+                    if (line.StartsWith(Statements.Comment)) continue;
+                    if (StartWith(line, Statements.MtlLib))
                     {
                         model.MatFilename = line.Substring(6).Trim();
                     }
-                    else if (StartWith(line, "v"))
+                    else if (StartWith(line, Statements.Vertex))
                     {
                         var vStr = line.Substring(2).Trim();
                         var strs = SplitLine(vStr);
                         var v = new Vec3(Double.Parse(strs[0]), Double.Parse(strs[1]), Double.Parse(strs[2]));
                         model.Vertices.Add(v);
                     }
-                    else if (StartWith(line, "vn"))
+                    else if (StartWith(line, Statements.VectorNormal))
                     {
                         var vnStr = line.Substring(3).Trim();
                         var strs = SplitLine(vnStr);
                         var vn = new Vec3(Double.Parse(strs[0]), Double.Parse(strs[1]), Double.Parse(strs[2]));
                         model.Normals.Add(vn);
                     }
-                    else if (StartWith(line, "vt"))
+                    else if (StartWith(line, Statements.VectorTexture))
                     {
                         var vtStr = line.Substring(3).Trim();
                         var strs = SplitLine(vtStr);
                         var vt = new Vec2(Double.Parse(strs[0]), Double.Parse(strs[1]));
                         model.Uvs.Add(vt);
                     }
-                    else if (StartWith(line, "g"))
+                    else if (StartWith(line, Statements.Group))
                     {
                         var gStr = line.Substring(2);
                         var groupNames = SplitLine(gStr);
 
                         currentGeometries = model.GetOrAddGeometries(groupNames);
                     }
-                    else if (StartWith(line, "usemtl"))
+                    else if (StartWith(line, Statements.UseMaterial))
                     {
                         var umtl = line.Substring(7).Trim();
                         currentMaterialName = umtl;
                     }
-                    else if (StartWith(line, "f"))
+                    else if (StartWith(line, Statements.Face))
                     {
                         var fStr = line.Substring(2).Trim();
-                        currentFace = new Face() { MatName = currentMaterialName };
+                        currentFace = new Face(currentMaterialName);
                         var strs = SplitLine(fStr);
                         if (strs.Length < 3) continue; // ignore face that has less than 3 vertices
                         if (strs.Length == 3)
@@ -165,7 +175,7 @@ namespace Arctron.Obj2Gltf.WaveFront
                                 // TODO:
                             }
                         }
-                        foreach(var currentGeometry in currentGeometries)
+                        foreach (var currentGeometry in currentGeometries)
                         {
                             currentGeometry.Faces.Add(currentFace);
                         }

@@ -41,7 +41,7 @@ namespace Arctron.Obj2Gltf.Tests
 
             var converter = new Converter(objParser, mtlParser);
             var outputFile = name + ".gltf";
-            var (model, buffers) = converter.Convert(objModel, Path.GetDirectoryName(TestObjPath), new GltfOptions { Name = "model" });
+            var (model, buffers) = converter.Convert(objModel, Path.GetDirectoryName(TestObjPath), new GltfOptions { Name = name });
             converter.WriteFile(model, false, outputFile, buffers);
             Assert.True(File.Exists(outputFile));
         }

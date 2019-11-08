@@ -14,15 +14,7 @@ namespace Arctron.Obj2Gltf
         /// 
         /// </summary>
         /// <param name="withBatchTable">whether include batchtables for 3d tiles</param>
-        public BufferState(Boolean withBatchTable = false)
-        {
-            if (withBatchTable)
-            {
-                BatchIdAccessors = new List<Int32>();
-                BatchIdBuffers = new List<Byte[]>();
-                BatchTableJson = new BatchTable();
-            }
-        }
+        public BufferState() { }
         /// <summary>
         /// Vertex Coordinates Buffers
         /// </summary>
@@ -55,21 +47,6 @@ namespace Arctron.Obj2Gltf
         /// Triangle Indices
         /// </summary>
         public List<Int32> IndexAccessors { get; } = new List<Int32>();
-        /// <summary>
-        /// if with batchTable, the current batch id
-        /// </summary>
-        public Int32 CurrentBatchId { get; set; }
-        /// <summary>
-        /// if with batchTable, batch ids buffers
-        /// </summary>
-        public List<Byte[]> BatchIdBuffers { get; set; }
-        /// <summary>
-        /// if with batchTable, batch ids indices
-        /// </summary>
-        public List<Int32> BatchIdAccessors { get; set; }
-        /// <summary>
-        /// batched table
-        /// </summary>
-        public BatchTable BatchTableJson { get; set; }
+
     }
 }

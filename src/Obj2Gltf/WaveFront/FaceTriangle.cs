@@ -30,7 +30,6 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// <summary>
         /// The third vertex
         /// </summary>
-
         public FaceVertex V3;
 
         public override String ToString()

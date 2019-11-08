@@ -11,14 +11,20 @@ namespace Arctron.Obj2Gltf.WaveFront
     /// </summary>
     public class Geometry
     {
+        public Geometry(String id)
+        {
+            if (String.IsNullOrWhiteSpace(id))
+                throw new ArgumentNullException(nameof(id));
+            Id = id;
+        }
         /// <summary>
         /// group name
         /// </summary>
-        public String Id { get; set; }
+        public String Id { get; }
         /// <summary>
         /// meshes
         /// </summary>
-        public List<Face> Faces { get; set; } = new List<Face>();
+        public List<Face> Faces { get; } = new List<Face>();
         /// <summary>
         /// write geometry
         /// </summary>
@@ -27,10 +33,7 @@ namespace Arctron.Obj2Gltf.WaveFront
         {
             writer.WriteLine($"g {Id}");
             writer.WriteLine($"s off");
-            foreach (var f in Faces)
-            {
-                f.Write(writer);
-            }
+            foreach (var f in Faces) f.Write(writer);
         }
     }
 }

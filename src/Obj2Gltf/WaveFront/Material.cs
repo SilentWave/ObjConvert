@@ -44,7 +44,7 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// <summary>
         /// Ke: emissive color
         /// </summary>
-        public Reflectivity Emissive { get; set; } = new Reflectivity(new FactorColor());
+        public Reflectivity Emissive { get; set; }
         /// <summary>
         /// illum: illum_# 0 ~ 10
         /// </summary>
@@ -74,7 +74,7 @@ namespace Arctron.Obj2Gltf.WaveFront
         {
             if (Dissolve != null)
             {
-                return Dissolve.Factor;                
+                return Dissolve.Factor;
             }
             if (Transparency != null)
             {

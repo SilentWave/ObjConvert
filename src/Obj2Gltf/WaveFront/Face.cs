@@ -10,10 +10,14 @@ namespace Arctron.Obj2Gltf.WaveFront
     /// </summary>
     public class Face
     {
+        public Face(String materialName = "default")
+        {
+            MatName = materialName;
+        }
         /// <summary>
         /// face used material name
         /// </summary>
-        public String MatName { get; set; } = String.Empty;
+        public String MatName { get; }
         /// <summary>
         /// face meshes
         /// </summary>
@@ -24,14 +28,10 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// <param name="writer"></param>
         public void Write(StreamWriter writer)
         {
-            if (!String.IsNullOrEmpty(MatName))
-            {
-                writer.WriteLine($"usemtl {MatName}");
-            }
+            writer.WriteLine($"usemtl {MatName}");
 
             var contents = String.Join(Environment.NewLine, Triangles);
             writer.WriteLine(contents);
-            writer.Flush();
         }
     }
 }

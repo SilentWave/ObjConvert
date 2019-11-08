@@ -14,10 +14,6 @@ namespace Arctron.Obj2Gltf
         /// </summary>
         public Boolean Binary { get; set; }
         /// <summary>
-        /// whether to generate batchids
-        /// </summary>
-        public Boolean WithBatchTable { get; set; }
-        /// <summary>
         /// obj and mtl files' text encoding
         /// </summary>
         public Encoding ObjEncoding { get; set; }
