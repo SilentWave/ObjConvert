@@ -5,16 +5,16 @@ namespace Arctron.Obj2Gltf
     /// <summary>
     /// a range expressed by Min and Max values
     /// </summary>
-    public class DoubleRange
+    public class SingleRange
     {
-        public DoubleRange()
+        public SingleRange()
         {
-            Min = Double.MaxValue;
-            Max = Double.MinValue;
+            Min = Single.MaxValue;
+            Max = Single.MinValue;
         }
-        public Double Min { get; set; }
+        public Single Min { get; set; }
 
-        public Double Max { get; set; }
+        public Single Max { get; set; }
 
         public Boolean IsValid()
         {

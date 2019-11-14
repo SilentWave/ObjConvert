@@ -17,18 +17,18 @@ namespace Arctron.ObjConvert.FrameworkTests
         public static void TestConvert()
         {
             var objFile = TestObjFile;
-            var opts = new GltfOptions();
+            var opts = new GltfConverterOptions();
             var mtlParser = new Obj2Gltf.WaveFront.MtlParser();
             var objParser = new Obj2Gltf.WaveFront.ObjParser();
-            var converter = new Converter( objParser, mtlParser);
-           var (model, _) = converter.Convert(objFile, opts);
+            var converter = new Converter(objParser, mtlParser);
+            var model = converter.Convert(objFile, opts);
             var outputFile = $"{Name}.gltf";
             if (opts.Binary)
             {
                 outputFile = $"{Name}.glb";
             }
-           
-            converter.WriteFile(model, false, outputFile);
+
+            //converter.WriteFile(model, false, outputFile);
         }
     }
 }

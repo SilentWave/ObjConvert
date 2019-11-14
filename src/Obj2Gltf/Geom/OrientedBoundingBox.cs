@@ -10,32 +10,32 @@ namespace Arctron.Obj2Gltf.Geom
     {
         public Matrix3 HalfAxis { get; set; }
 
-        public Vec3 Center { get; set; }
+        public SVec3 Center { get; set; }
 
 
-        public static OrientedBoundingBox FromPoints(IList<Vec3> positions)
+        public static OrientedBoundingBox FromPoints(IList<SVec3> positions)
         {
             var result = new OrientedBoundingBox();
 
             var length = positions.Count;
 
             var meanPoint = positions[0];
-            for(var i = 1; i< length;i++)
+            for (var i = 1; i < length; i++)
             {
-                meanPoint = Vec3.Add(meanPoint, positions[i]);
+                meanPoint = SVec3.Sum(meanPoint, positions[i]);
             }
-            var invLength = 1.0 / length;
+            var invLength = 1.0f / length;
 
             meanPoint = meanPoint.MultiplyBy(invLength);
 
-            var exx = 0.0;
-            var exy = 0.0;
-            var exz = 0.0;
-            var eyy = 0.0;
-            var eyz = 0.0;
-            var ezz = 0.0;
+            var exx = 0.0f;
+            var exy = 0.0f;
+            var exz = 0.0f;
+            var eyy = 0.0f;
+            var eyz = 0.0f;
+            var ezz = 0.0f;
 
-            for(var i = 0;i<length;i++)
+            for (var i = 0; i < length; i++)
             {
                 var p = positions[i].Substract(meanPoint);
                 exx += p.X * p.X;
@@ -64,34 +64,34 @@ namespace Arctron.Obj2Gltf.Geom
             var v2 = rotation.GetColumn(1);
             var v3 = rotation.GetColumn(2);
 
-            var u1 = Double.MinValue; //-Number.MAX_VALUE;
-            var u2 = Double.MinValue; //-Number.MAX_VALUE;
-            var u3 = Double.MinValue; //-Number.MAX_VALUE;
-            var l1 = Double.MaxValue; //Number.MAX_VALUE;
-            var l2 = Double.MaxValue; //Number.MAX_VALUE;
-            var l3 = Double.MaxValue; //Number.MAX_VALUE;
+            var u1 = Single.MinValue; //-Number.MAX_VALUE;
+            var u2 = Single.MinValue; //-Number.MAX_VALUE;
+            var u3 = Single.MinValue; //-Number.MAX_VALUE;
+            var l1 = Single.MaxValue; //Number.MAX_VALUE;
+            var l2 = Single.MaxValue; //Number.MAX_VALUE;
+            var l3 = Single.MaxValue; //Number.MAX_VALUE;
 
-            for(var i = 0;i <length;i++)
+            for (var i = 0; i < length; i++)
             {
                 var p = positions[i];
-                u1 = new[] { Vec3.Dot(v1, p), u1 }.Max();
-                u2 = new[] { Vec3.Dot(v2, p), u2 }.Max();
-                u3 = new[] { Vec3.Dot(v3, p), u3 }.Max();
+                u1 = new[] { SVec3.Dot(v1, p), u1 }.Max();
+                u2 = new[] { SVec3.Dot(v2, p), u2 }.Max();
+                u3 = new[] { SVec3.Dot(v3, p), u3 }.Max();
 
-                l1 = new[] { Vec3.Dot(v1, p), l1 }.Min();
-                l2 = new[] { Vec3.Dot(v2, p), l2 }.Min();
-                l3 = new[] { Vec3.Dot(v3, p), l3 }.Min();
+                l1 = new[] { SVec3.Dot(v1, p), l1 }.Min();
+                l2 = new[] { SVec3.Dot(v2, p), l2 }.Min();
+                l3 = new[] { SVec3.Dot(v3, p), l3 }.Min();
             }
 
-            v1 = v1.MultiplyBy(0.5 * (l1 + u1));
-            v2 = v2.MultiplyBy(0.5 * (l2 + u2));
-            v3 = v3.MultiplyBy(0.5 * (l3 + u3));
+            v1 = v1.MultiplyBy(0.5f * (l1 + u1));
+            v2 = v2.MultiplyBy(0.5f * (l2 + u2));
+            v3 = v3.MultiplyBy(0.5f * (l3 + u3));
 
-            var center = Vec3.Add(v1, v2);
-            center = Vec3.Add(center, v3);
+            var center = SVec3.Sum(v1, v2);
+            center = SVec3.Sum(center, v3);
 
-            var scale = new Vec3(u1 - l1, u2 - l2, u3 - l3);
-            scale = scale.MultiplyBy(0.5);
+            var scale = new SVec3(u1 - l1, u2 - l2, u3 - l3);
+            scale = scale.MultiplyBy(0.5f);
 
             rotation = rotation.MultiplyByScale(scale);
 

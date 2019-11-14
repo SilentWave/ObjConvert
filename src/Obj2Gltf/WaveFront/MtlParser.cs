@@ -74,7 +74,7 @@ namespace Arctron.Obj2Gltf.WaveFront
 
         public Task<Material[]> ParseAsync(String path, String searchPath = null, Encoding encoding = null)
         {
-            if (searchPath == null) searchPath = System.IO.Path.GetDirectoryName(path);
+            if (searchPath == null) searchPath = Path.GetDirectoryName(path);
             return Task.Run(() =>
             {
                 using (var file = File.OpenRead(path))
@@ -91,7 +91,7 @@ namespace Arctron.Obj2Gltf.WaveFront
         {
             using (var file = File.OpenRead(path))
             {
-                if (searchPath == null) searchPath = System.IO.Path.GetDirectoryName(path);
+                if (searchPath == null) searchPath = Path.GetDirectoryName(path);
                 return Parse(file, searchPath, encoding).ToArray();
             }
         }

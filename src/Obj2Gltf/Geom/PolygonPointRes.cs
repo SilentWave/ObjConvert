@@ -4,7 +4,7 @@
     {
         Outside,
         Inside,
-        Vetex,
+        Vertex,
         Edge
     }
 }

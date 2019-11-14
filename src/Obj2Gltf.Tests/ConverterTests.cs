@@ -8,59 +8,74 @@ namespace Arctron.Obj2Gltf.Tests
 {
     public class ConverterTests
     {
-        private static String TestObjPath = @"..\..\..\..\testassets\Office\model.obj";
-
-        static void CheckObjFiles()
-        {
-            Assert.True(File.Exists(TestObjPath), "Obj File does not exist!");
-        }
         [Fact]
-        public void TestConvertGltf()
+        public void Converting_obj_to_gltf_should_retain_textures()
         {
-            var name = "model";
-            CheckObjFiles();
-            var options = new GltfOptions();
+            var path = @"..\..\..\..\testassets\CubeWithTextures\cube.obj";
+            var name = Path.GetFileNameWithoutExtension(path);
+            var options = new GltfConverterOptions();
             var mtlParser = new WaveFront.MtlParser();
             var objParser = new WaveFront.ObjParser();
             var converter = new Converter(objParser, mtlParser);
-            var outputFile = name + ".gltf";
-            var (model, _) = converter.Convert(TestObjPath, options);
-            converter.WriteFile(model, false, outputFile);
+            var outputFile = Path.Combine(Path.GetDirectoryName(path), $"{name}.gltf");
+            var model = converter.Convert(path, options);
+            converter.WriteFile(model, outputFile);
+            Assert.True(File.Exists(outputFile));
+        }
+
+        [Fact]
+        public void Converting_obj_to_gltf_should_retain_normals()
+        {
+            var path = @"..\..\..\..\testassets\Office\model.obj";
+            var dir = Path.GetDirectoryName(path);
+            var name = Path.GetFileNameWithoutExtension(path);
+            var options = new GltfConverterOptions();
+            var mtlParser = new WaveFront.MtlParser();
+            var objParser = new WaveFront.ObjParser();
+            var converter = new Converter(objParser, mtlParser);
+            var outputFile = Path.Combine(dir, $"{name}.gltf");
+            var model = converter.Convert(path, options);
+            converter.WriteFile(model, outputFile);
             Assert.True(File.Exists(outputFile));
         }
 
         [Fact]
         public void TestConvertGltf2()
         {
-            var name = "model";
-            CheckObjFiles();
+            var path = @"..\..\..\..\testassets\CubeWithTextures\cube.obj";
+            var dir = Path.GetDirectoryName(path);
+            var name = Path.GetFileNameWithoutExtension(path);
 
             var mtlParser = new WaveFront.MtlParser();
             var objParser = new WaveFront.ObjParser();
-            var objModel = objParser.Parse(TestObjPath);
+            var objModel = objParser.Parse(path);
 
             var converter = new Converter(objParser, mtlParser);
-            var outputFile = name + ".gltf";
-            var (model, buffers) = converter.Convert(objModel, Path.GetDirectoryName(TestObjPath), new GltfOptions { Name = name });
-            converter.WriteFile(model, false, outputFile, buffers);
+            var outputFile = Path.Combine(dir, $"{name}.gltf");
+            var model = converter.Convert(objModel, Path.GetDirectoryName(path), new GltfConverterOptions { Name = name });
+            converter.WriteFile(model, outputFile);
             Assert.True(File.Exists(outputFile));
         }
 
         [Fact]
         public void TestConvertGlb()
         {
-            var name = "model";
+            var path = @"..\..\..\..\testassets\CubeWithTextures\cube.obj";
+            var dir = Path.GetDirectoryName(path);
+            var name = Path.GetFileNameWithoutExtension(path);
 
-            CheckObjFiles();
-            var objFile = TestObjPath;
-            var options = new GltfOptions { Binary = true };
+            var options = new GltfConverterOptions { Binary = true };
             var mtlParser = new WaveFront.MtlParser();
             var objParser = new WaveFront.ObjParser();
             var converter = new Converter(objParser, mtlParser);
-            var outputFile = $"{name}.glb";
-            var (model, buffers) = converter.Convert(objFile, options);
-            converter.WriteFile(model, true, outputFile, buffers);
-            Assert.True(System.IO.File.Exists(outputFile));
+            var outputFile = Path.Combine(dir, $"{name}.gltf");
+            var model = converter.Convert(path, options);
+            converter.WriteFile(model, outputFile);
+
+            var glbConv = new Gltf2GlbConverter();
+            glbConv.Convert(new Gltf2GlbOptions(outputFile));
+
+            Assert.True(File.Exists(outputFile));
         }
     }
 }

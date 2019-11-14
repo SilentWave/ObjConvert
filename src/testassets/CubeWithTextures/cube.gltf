@@ -1,0 +1,197 @@
+{
+  "accessors": [
+    {
+      "name": "cube_indices",
+      "componentType": 5123,
+      "count": 36,
+      "min": [
+        0
+      ],
+      "max": [
+        23
+      ],
+      "type": "SCALAR",
+      "bufferView": 0,
+      "byteOffset": 0
+    },
+    {
+      "name": "cube_positions",
+      "componentType": 5126,
+      "count": 24,
+      "min": [
+        -0.5,
+        -0.5,
+        -0.5
+      ],
+      "max": [
+        0.5,
+        0.5,
+        0.5
+      ],
+      "type": "VEC3",
+      "bufferView": 1,
+      "byteOffset": 0
+    },
+    {
+      "name": "cube_normals",
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC3",
+      "bufferView": 2,
+      "byteOffset": 0
+    },
+    {
+      "name": "cube_texcoords",
+      "componentType": 5126,
+      "count": 24,
+      "type": "VEC2",
+      "bufferView": 3,
+      "byteOffset": 0
+    }
+  ],
+  "asset": {
+    "generator": "arctron",
+    "version": "2.0"
+  },
+  "buffers": [
+    {
+      "name": "Indices",
+      "byteLength": 72,
+      "uri": "Indices.bin"
+    },
+    {
+      "name": "Positions",
+      "byteLength": 288,
+      "uri": "Positions.bin"
+    },
+    {
+      "name": "Normals",
+      "byteLength": 288,
+      "uri": "Normals.bin"
+    },
+    {
+      "name": "Uvs",
+      "byteLength": 192,
+      "uri": "Uvs.bin"
+    }
+  ],
+  "bufferViews": [
+    {
+      "name": "Indexes",
+      "buffer": 0,
+      "byteLength": 72,
+      "byteOffset": 0,
+      "target": 34963
+    },
+    {
+      "name": "Positions",
+      "buffer": 1,
+      "byteLength": 288,
+      "byteOffset": 0,
+      "target": 34962
+    },
+    {
+      "name": "Normals",
+      "buffer": 2,
+      "byteLength": 288,
+      "byteOffset": 0
+    },
+    {
+      "name": "Uvs",
+      "buffer": 3,
+      "byteLength": 192,
+      "byteOffset": 0
+    }
+  ],
+  "images": [
+    {
+      "name": "cube.png",
+      "uri": "cube.png"
+    }
+  ],
+  "materials": [
+    {
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.5,
+          0.5,
+          0.5,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 1.0
+      },
+      "alphaMode": "OPAQUE",
+      "doubleSided": false
+    },
+    {
+      "name": "cube",
+      "pbrMetallicRoughness": {
+        "baseColorFactor": [
+          0.588,
+          0.588,
+          0.588,
+          1.0
+        ],
+        "baseColorTexture": {
+          "index": 0
+        },
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.99
+      },
+      "emissiveFactor": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "alphaMode": "OPAQUE",
+      "doubleSided": false
+    }
+  ],
+  "meshes": [
+    {
+      "name": "cube",
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 1,
+            "NORMAL": 2,
+            "TEXCOORD_0": 3
+          },
+          "indices": 0,
+          "material": 1,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "name": "cube",
+      "mesh": 0
+    }
+  ],
+  "samplers": [
+    {
+      "magFilter": 9729,
+      "minFilter": 9986,
+      "wrapS": 10497,
+      "wrapT": 10497
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "textures": [
+    {
+      "name": "cube.png",
+      "sampler": 0,
+      "source": 0
+    }
+  ]
+}

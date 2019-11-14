@@ -8,11 +8,11 @@ namespace Arctron.Obj2Gltf.Geom
     // Cesium
     internal class Matrix3
     {
-        private readonly Double[] _arr = new Double[9];
+        private readonly Single[] _arr = new Single[9];
 
-        public Matrix3(Double column0Row0, Double column1Row0, Double column2Row0,
-                           Double column0Row1, Double column1Row1, Double column2Row1,
-                           Double column0Row2, Double column1Row2, Double column2Row2)
+        public Matrix3(Single column0Row0, Single column1Row0, Single column2Row0,
+                           Single column0Row1, Single column1Row1, Single column2Row1,
+                           Single column0Row2, Single column1Row2, Single column2Row2)
         {
             _arr[0] = column0Row0;
             _arr[1] = column0Row1;
@@ -25,16 +25,16 @@ namespace Arctron.Obj2Gltf.Geom
             _arr[8] = column2Row2;
         }
 
-        public Vec3 GetColumn(Int32 index)
+        public SVec3 GetColumn(Int32 index)
         {
             switch(index)
             {
                 case 0:
-                    return new Vec3(_arr[0], _arr[1], _arr[2]);
+                    return new SVec3(_arr[0], _arr[1], _arr[2]);
                 case 1:
-                    return new Vec3(_arr[3], _arr[4], _arr[5]);
+                    return new SVec3(_arr[3], _arr[4], _arr[5]);
                 case 2:
-                    return new Vec3(_arr[6], _arr[7], _arr[8]);
+                    return new SVec3(_arr[6], _arr[7], _arr[8]);
                 default:
                     throw new Exception($"Invalid index {index}");
             }
@@ -50,9 +50,9 @@ namespace Arctron.Obj2Gltf.Geom
             return new Matrix3(_arr[0], _arr[1], _arr[2], _arr[3], _arr[4], _arr[5], _arr[6], _arr[7], _arr[8]);
         }
 
-        private Double ComputeFrobeniusNorm()
+        private Single ComputeFrobeniusNorm()
         {
-            return Math.Sqrt(_arr.Select(c => c * c).Sum());
+            return (Single)Math.Sqrt(_arr.Select(c => c * c).Sum());
         }
 
         private static Int32 GetArrayIndex(Int32 row, Int32 col)
@@ -76,7 +76,7 @@ namespace Arctron.Obj2Gltf.Geom
             return new Matrix3(column0Row0, column0Row1, column0Row2, column1Row0, column1Row1, column1Row2, column2Row0, column2Row1, column2Row2);
         }
 
-        public Double this[Int32 row, Int32 col]
+        public Single this[Int32 row, Int32 col]
         {
             get { return _arr[GetArrayIndex(row, col)]; }
             set
@@ -86,12 +86,12 @@ namespace Arctron.Obj2Gltf.Geom
             }
         }
 
-        private Double OffDiagonalFrobeniusNorm()
+        private Single OffDiagonalFrobeniusNorm()
         {
             var a = _arr[GetArrayIndex(0, 0)];
             var b = _arr[GetArrayIndex(1, 1)];
             var c = _arr[GetArrayIndex(2, 2)];
-            return Math.Sqrt(a * a + b * b + c * c);
+            return (Single)Math.Sqrt(a * a + b * b + c * c);
         }
 
         static Int32[] rowVal =  { 1, 0, 0 };
@@ -121,8 +121,8 @@ namespace Arctron.Obj2Gltf.Geom
                     maxDiagonal = temp;
                 }
             }
-            var c = 1.0;
-            var s = 0.0;
+            var c = 1.0f;
+            var s = 0.0f;
 
             var p = rowVal[rotAxis];
             var q = colVal[rotAxis];
@@ -133,22 +133,22 @@ namespace Arctron.Obj2Gltf.Geom
                 var pp = this[p, p];
                 var qp = this[p, q];
 
-                var tau = (qq - pp) / (2.0 * qp);
-                Double t;
+                var tau = (qq - pp) / (2.0f * qp);
+                Single t;
                 if (tau < 0)
                 {
-                    t = -1.0 / (-tau + Math.Sqrt(1.0 + tau * tau));
+                    t = -1.0f / (-tau + (Single)Math.Sqrt(1.0 + tau * tau));
                 }
                 else
                 {
-                    t = 1.0 / (tau + Math.Sqrt(1.0 + tau * tau));
+                    t = 1.0f / (tau + (Single)Math.Sqrt(1.0 + tau * tau));
                 }
 
-                c = 1.0 / Math.Sqrt(1.0 + t * t);
+                c = 1.0f / (Single)Math.Sqrt(1.0f + t * t);
                 s = t * c;
             }
 
-            var result = Matrix3.Identity.Clone();
+            var result = Identity.Clone();
             result[p, p] = result[q, q] = c;
             result[p, q] = s;
             result[q, p] = -s;
@@ -156,15 +156,15 @@ namespace Arctron.Obj2Gltf.Geom
             return result;
         }
 
-        public Double this[Int32 index]
+        public Single this[Int32 index]
         {
             get { return _arr[index]; }
         }
 
-        public Matrix3 MultiplyByScale(Vec3 scale)
+        public Matrix3 MultiplyByScale(SVec3 scale)
         {
             var matrix = _arr;
-            var result = new Double[9];
+            var result = new Single[9];
 
             result[0] = matrix[0] * scale.X;
             result[1] = matrix[1] * scale.X;

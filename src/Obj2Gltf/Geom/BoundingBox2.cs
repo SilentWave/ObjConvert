@@ -4,16 +4,16 @@ namespace Arctron.Obj2Gltf.Geom
 {
     public class BoundingBox2
     {
-        public Vec2 Min { get; set; }
+        public SVec2 Min { get; set; }
 
-        public Vec2 Max { get; set; }
+        public SVec2 Max { get; set; }
 
         public Boolean IsValid()
         {
             return Min.U < Max.U && Min.V < Max.V;
         }
 
-        public Boolean IsIn(Vec2 p)
+        public Boolean IsIn(SVec2 p)
         {
             return p.U > Min.U && p.U < Max.U && p.V > Min.V && p.V < Max.V;
         }
@@ -22,8 +22,8 @@ namespace Arctron.Obj2Gltf.Geom
         {
             return new BoundingBox2
             {
-                Min = new Vec2(Double.MaxValue, Double.MaxValue),
-                Max = new Vec2(Double.MinValue, Double.MinValue)
+                Min = new SVec2(Single.MaxValue, Single.MaxValue),
+                Max = new SVec2(Single.MinValue, Single.MinValue)
             };
 
         }

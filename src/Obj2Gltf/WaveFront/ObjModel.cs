@@ -19,15 +19,15 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// <summary>
         /// vertices coordinates list
         /// </summary>
-        public List<Vec3> Vertices { get; set; } = new List<Vec3>();
+        public List<SVec3> Vertices { get; set; } = new List<SVec3>();
         /// <summary>
         /// vertices normal list
         /// </summary>
-        public List<Vec3> Normals { get; set; } = new List<Vec3>();
+        public List<SVec3> Normals { get; set; } = new List<SVec3>();
         /// <summary>
         /// vertices texture coordinates list
         /// </summary>
-        public List<Vec2> Uvs { get; set; } = new List<Vec2>();
+        public List<SVec2> Uvs { get; set; } = new List<SVec2>();
 
         private Dictionary<String, Geometry> _Geometries = new Dictionary<String, Geometry>();
         /// <summary>
@@ -96,19 +96,19 @@ namespace Arctron.Obj2Gltf.WaveFront
                     MatFilename = MatFilename,
                     Materials = Materials
                 };
-                if (m.Vertices == null) m.Vertices = new List<Vec3>();
+                if (m.Vertices == null) m.Vertices = new List<SVec3>();
                 var ps = pnts[i];
                 foreach (var v in ps)
                 {
                     m.Vertices.Add(Vertices[v - 1]);
                 }
-                if (m.Normals == null) m.Normals = new List<Vec3>();
+                if (m.Normals == null) m.Normals = new List<SVec3>();
                 var ns = normals[i];
                 foreach (var n in ns)
                 {
                     m.Normals.Add(Normals[n - 1]);
                 }
-                if (m.Uvs == null) m.Uvs = new List<Vec2>();
+                if (m.Uvs == null) m.Uvs = new List<SVec2>();
                 var ts = uvs[i];
                 foreach (var t in ts)
                 {
@@ -258,7 +258,7 @@ namespace Arctron.Obj2Gltf.WaveFront
         {
             public Int32 Index { get; set; } = -1;
 
-            public Vec3 Center { get; set; }
+            public SVec3 Center { get; set; }
 
             public SortedSet<Int32> Pnts { get; set; }
 
@@ -286,9 +286,9 @@ namespace Arctron.Obj2Gltf.WaveFront
             var ps = new SortedSet<Int32>();
             var ns = new SortedSet<Int32>();
             var ts = new SortedSet<Int32>();
-            var sumX = 0.0;
-            var sumY = 0.0;
-            var sumZ = 0.0;
+            var sumX = 0.0f;
+            var sumY = 0.0f;
+            var sumZ = 0.0f;
             foreach (var f in g.Faces)
             {
                 foreach (var t in f.Triangles)
@@ -352,7 +352,7 @@ namespace Arctron.Obj2Gltf.WaveFront
             var z = sumZ / ps.Count;
             return new GeomBox
             {
-                Center = new Vec3(x, y, z),
+                Center = new SVec3(x, y, z),
                 Pnts = ps,
                 Norms = ns,
                 Uvs = ts

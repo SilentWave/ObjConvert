@@ -7,7 +7,7 @@ namespace Arctron.Obj2Gltf.Geom
 {
     internal static class GeomUtil
     {
-        public static PlanarAxis ComputeProjectTo2DArguments(IList<Vec3> positions)
+        public static PlanarAxis ComputeProjectTo2DArguments(IList<SVec3> positions)
         {
             var box = OrientedBoundingBox.FromPoints(positions);
 
@@ -26,8 +26,8 @@ namespace Arctron.Obj2Gltf.Geom
                 return null;
             }
 
-            var planeAxis1 = new Vec3();
-            var planeAxis2 = new Vec3();
+            var planeAxis1 = new SVec3();
+            var planeAxis2 = new SVec3();
 
             if (min == yMag || min == zMag)
             {
@@ -55,18 +55,18 @@ namespace Arctron.Obj2Gltf.Geom
         }
 
 
-        private static Vec2 Project2D(Vec3 p, Vec3 center, Vec3 axis1, Vec3 axis2)
+        private static SVec2 Project2D(SVec3 p, SVec3 center, SVec3 axis1, SVec3 axis2)
         {
             var v = p.Substract(center);
-            var x = Vec3.Dot(axis1, v);
-            var y = Vec3.Dot(axis2, v);
+            var x = SVec3.Dot(axis1, v);
+            var y = SVec3.Dot(axis2, v);
 
-            return new Vec2(x, y);
+            return new SVec2(x, y);
         }
 
-        public static IList<Vec2> CreateProjectPointsTo2DFunction(PlanarAxis axis, IList<Vec3> positions)
+        public static IList<SVec2> CreateProjectPointsTo2DFunction(PlanarAxis axis, IList<SVec3> positions)
         {
-            var pnts = new Vec2[positions.Count];
+            var pnts = new SVec2[positions.Count];
             for(var i = 0;i< pnts.Length;i++)
             {
                 pnts[i] = Project2D(positions[i], axis.Center, axis.Axis1, axis.Axis2);

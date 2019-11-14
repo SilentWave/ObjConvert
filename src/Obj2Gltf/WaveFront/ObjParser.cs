@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Arctron.Obj2Gltf.Geom;
 
@@ -58,7 +60,7 @@ namespace Arctron.Obj2Gltf.WaveFront
         /// get parsed obj model
         /// </summary>
         /// <returns></returns>
-        public ObjModel Parse(String objFilePath, Encoding encoding = null)
+        public ObjModel Parse(String objFilePath, Boolean removeDegenerateFaces = false, Encoding encoding = null)
         {
             if (String.IsNullOrEmpty(objFilePath)) throw new ArgumentNullException(nameof(objFilePath));
 
@@ -72,6 +74,7 @@ namespace Arctron.Obj2Gltf.WaveFront
 
             using (_reader)
             {
+                model.Materials.Add(new Material() { Ambient = new Reflectivity(new FactorColor(1)) });
                 var currentMaterialName = "default";
                 var currentGeometries = model.GetOrAddGeometries("default");
                 Face currentFace = null;
@@ -89,21 +92,29 @@ namespace Arctron.Obj2Gltf.WaveFront
                     {
                         var vStr = line.Substring(2).Trim();
                         var strs = SplitLine(vStr);
-                        var v = new Vec3(Double.Parse(strs[0]), Double.Parse(strs[1]), Double.Parse(strs[2]));
+                        var v = new SVec3(
+                            Single.Parse(strs[0], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat),
+                            Single.Parse(strs[1], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat),
+                            Single.Parse(strs[2], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat));
                         model.Vertices.Add(v);
                     }
                     else if (StartWith(line, Statements.VectorNormal))
                     {
                         var vnStr = line.Substring(3).Trim();
                         var strs = SplitLine(vnStr);
-                        var vn = new Vec3(Double.Parse(strs[0]), Double.Parse(strs[1]), Double.Parse(strs[2]));
+                        var vn = new SVec3(
+                            Single.Parse(strs[0], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat),
+                            Single.Parse(strs[1], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat),
+                            Single.Parse(strs[2], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat));
                         model.Normals.Add(vn);
                     }
                     else if (StartWith(line, Statements.VectorTexture))
                     {
                         var vtStr = line.Substring(3).Trim();
                         var strs = SplitLine(vtStr);
-                        var vt = new Vec2(Double.Parse(strs[0]), Double.Parse(strs[1]));
+                        var vt = new SVec2(
+                            Single.Parse(strs[0], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat),
+                            Single.Parse(strs[1], NumberStyles.Float, CultureInfo.InvariantCulture.NumberFormat));
                         model.Uvs.Add(vt);
                     }
                     else if (StartWith(line, Statements.Group))
@@ -145,7 +156,7 @@ namespace Arctron.Obj2Gltf.WaveFront
                         }
                         else //if (strs.Length > 4)
                         {
-                            var points = new List<Vec3>();
+                            var points = new List<SVec3>();
                             for (var i = 0; i < strs.Length; i++)
                             {
                                 var vv = GetVertex(strs[i]);
@@ -184,6 +195,33 @@ namespace Arctron.Obj2Gltf.WaveFront
                     {
                         //var strs = SplitLine(line);
                     }
+                }
+                if (removeDegenerateFaces)
+                {
+                    foreach (var geom in model.Geometries)
+                    {
+                        foreach (var face in geom.Faces)
+                        {
+                            var notDegradedTriangles = new List<FaceTriangle>();
+                            for (int i = 0; i < face.Triangles.Count; i++)
+                            {
+                                var triangle = face.Triangles[i];
+                                var a = model.Vertices[triangle.V1.V - 1];
+                                var b = model.Vertices[triangle.V2.V - 1];
+                                var c = model.Vertices[triangle.V3.V - 1];
+                                var sideLengths = new List<Single>() {
+                                    (a - b).GetLength(),
+                                    (b - c).GetLength(),
+                                    (c - a).GetLength()
+                                };
+                                sideLengths.Sort();
+                                if (!(sideLengths[0] + sideLengths[1] <= sideLengths[2]))
+                                    notDegradedTriangles.Add(triangle);
+                            }
+                            face.Triangles = notDegradedTriangles;
+                        }
+                    }
+
                 }
             }
             return model;

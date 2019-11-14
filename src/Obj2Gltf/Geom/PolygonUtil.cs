@@ -7,16 +7,16 @@ namespace Arctron.Obj2Gltf.Geom
     public class PolygonUtil
     {
         // 
-        private static Boolean IsIntersect(Vec2 ln1Start, Vec2 ln1End, Vec2 ln2Start, Vec2 ln2End)
+        private static Boolean IsIntersect(SVec2 ln1Start, SVec2 ln1End, SVec2 ln2Start, SVec2 ln2End)
         {
             //https://ideone.com/PnPJgb
             var A = ln1Start;
             var B = ln1End;
             var C = ln2Start;
             var D = ln2End;
-            var CmP = new Vec2(C.U - A.U, C.V - A.V);
-            var r = new Vec2(B.U - A.U, B.V - A.V);
-            var s = new Vec2(D.U - C.U, D.V - C.V);
+            var CmP = new SVec2(C.U - A.U, C.V - A.V);
+            var r = new SVec2(B.U - A.U, B.V - A.V);
+            var s = new SVec2(D.U - C.U, D.V - C.V);
 
             var CmPxr = CmP.U * r.V - CmP.V * r.U;
             var CmPxs = CmP.U * s.V - CmP.V * s.U;
@@ -64,29 +64,29 @@ namespace Arctron.Obj2Gltf.Geom
             //return u >= 0.0 && u <= 1.0;
         }
 
-        public static PolygonPointRes CrossTest(Vec2 p, IList<Vec2> polygon, Double tol)
+        public static PolygonPointRes CrossTest(SVec2 p, IList<SVec2> polygon, Single tol)
         {
 
-            Double minX = Double.MaxValue, minY = Double.MaxValue, maxX = Double.MinValue, maxY = Double.MinValue;
-            var angleVs = new List<Double>();
-            var vecX = new Vec2(1.0, 0);
-            foreach(var v in polygon)
+            Single minX = Single.MaxValue, minY = Single.MaxValue, maxX = Single.MinValue, maxY = Single.MinValue;
+            var angleVs = new List<Single>();
+            var vecX = new SVec2(1.0f, 0);
+            foreach (var v in polygon)
             {
-                var d = p.GetDistance(v);                
-                if (d < tol) return PolygonPointRes.Vetex;
+                var d = p.GetDistance(v);
+                if (d < tol) return PolygonPointRes.Vertex;
                 if (minX > v.U) minX = v.U;
                 if (minY > v.V) minY = v.V;
                 if (maxX < v.U) maxX = v.U;
                 if (maxY < v.V) maxY = v.V;
-                var vector = new Vec2(v.U - p.U, v.V - p.V).Normalize();
-                var an = Math.Acos(vecX.Dot(vector));
+                var vector = new SVec2(v.U - p.U, v.V - p.V).Normalize();
+                var an = (Single)Math.Acos(vecX.Dot(vector));
                 if (vector.V < 0)
                 {
-                    an = 2* Math.PI - an;
+                    an = 2 * (Single)Math.PI - an;
                 }
                 angleVs.Add(an);
             }
-            for(var i = 0;i<polygon.Count;i++)
+            for (var i = 0; i < polygon.Count; i++)
             {
                 var j = i + 1;
                 if (j == polygon.Count)
@@ -96,19 +96,20 @@ namespace Arctron.Obj2Gltf.Geom
                 var v1 = polygon[i];
                 var v2 = polygon[j];
                 var d0 = v1.GetDistance(v2);
-                if (Math.Abs(p.GetDistance(v1) + p.GetDistance(v2) - d0) < tol)
+                var distance = Math.Abs(p.GetDistance(v1) + p.GetDistance(v2) - d0);
+                if (distance < tol)
                 {
                     return PolygonPointRes.Edge;
                 }
             }
-            var box = new BoundingBox2 { Min = new Vec2(minX, minY), Max = new Vec2(maxX, maxY) };
+            var box = new BoundingBox2 { Min = new SVec2(minX, minY), Max = new SVec2(maxX, maxY) };
             if (!box.IsIn(p)) return PolygonPointRes.Outside;
 
             angleVs.Sort();
 
             var startIndex = 0;
-            var diff = angleVs[1]-angleVs[0];
-            for(var i = 1;i<angleVs.Count;i++)
+            var diff = angleVs[1] - angleVs[0];
+            for (var i = 1; i < angleVs.Count; i++)
             {
                 var j = i + 1;
                 if (j == angleVs.Count) j = 0;
@@ -125,10 +126,10 @@ namespace Arctron.Obj2Gltf.Geom
             }
             var angle = angleVs[startIndex] + diff / 2.0;
             var len = box.Max.GetDistance(box.Min);
-            var p2 = new Vec2(len * Math.Cos(angle), len * Math.Sin(angle));
+            var p2 = new SVec2(len * (Single)Math.Cos(angle), len * (Single)Math.Sin(angle));
 
             var intersectCount = 0;
-            for(var i = 0;i<polygon.Count;i++)
+            for (var i = 0; i < polygon.Count; i++)
             {
                 var j = i + 1;
                 if (j == polygon.Count) j = 0;
@@ -138,7 +139,7 @@ namespace Arctron.Obj2Gltf.Geom
                 IsIntersect(p, p2, v1, v2);
                 if (pnt)
                 {
-                    
+
                     intersectCount++;
                 }
             }
@@ -150,7 +151,7 @@ namespace Arctron.Obj2Gltf.Geom
             return PolygonPointRes.Outside;
         }
 
-        private static Double GetRayLength(Vec2 p, IList<Vec2> polygon)
+        private static Single GetRayLength(SVec2 p, IList<SVec2> polygon)
         {
             throw new NotImplementedException();
         }

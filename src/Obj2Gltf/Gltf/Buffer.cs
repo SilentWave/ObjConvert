@@ -19,7 +19,7 @@ namespace Arctron.Gltf
         /// The length of the buffer in bytes.
         /// </summary>
         [JsonProperty("byteLength")]
-        public Int32 ByteLength { get; set; }
+        public Int64 ByteLength { get; set; }
         /// <summary>
         /// The uri of the buffer.  Relative paths are relative to the .gltf file.
         /// Instead of referencing an external file, the uri can also be a data-uri.

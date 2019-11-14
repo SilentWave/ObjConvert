@@ -15,13 +15,14 @@ namespace Arctron.Gltf
         [JsonProperty("asset")]
         public Asset Asset { get; set; } = new Asset { Generator = "arctron", Version = "2.0" };
         [JsonProperty("buffers")]
-        public List<Buffer> Buffers { get;  } = new List<Buffer>();
+        public List<Buffer> Buffers { get; } = new List<Buffer>();
         [JsonProperty("bufferViews")]
         public List<BufferView> BufferViews { get; } = new List<BufferView>();
         [JsonProperty("images")]
         public List<Image> Images { get; } = new List<Image>();
         [JsonProperty("materials")]
         public List<Material> Materials { get; } = new List<Material>();
+
         [JsonProperty("meshes")]
         public List<Mesh> Meshes { get; } = new List<Mesh>();
         [JsonProperty("nodes")]

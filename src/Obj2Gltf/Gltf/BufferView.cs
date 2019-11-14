@@ -18,17 +18,17 @@ namespace Arctron.Gltf
         /// The parent `Buffer`.
         /// </summary>
         [JsonProperty("buffer")]
-        public Int32 Buffer { get; set; }
+        public Int32? Buffer { get; set; }
         /// <summary>
         /// The length of the `BufferView` in bytes.
         /// </summary>
         [JsonProperty("byteLength")]
-        public Int32 ByteLength { get; set; }
+        public Int64 ByteLength { get; set; }
         /// <summary>
         /// Offset into the parent buffer in bytes.
         /// </summary>
         [JsonProperty("byteOffset")]
-        public Int32 ByteOffset { get; set; }
+        public Int64 ByteOffset { get; set; }
         /// <summary>
         /// The stride in bytes between vertex attributes or other interleavable data.
         /// When zero, data is assumed to be tightly packed.
@@ -39,6 +39,6 @@ namespace Arctron.Gltf
         /// Optional target the buffer should be bound to.
         /// </summary>
         [JsonProperty("target")]
-        public Int32? Target { get; set; }
+        public BufferViewTarget? Target { get; set; }
     }
 }

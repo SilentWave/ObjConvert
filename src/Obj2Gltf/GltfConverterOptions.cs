@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Arctron.Obj2Gltf
 {
-    public class GltfOptions
+    public class GltfConverterOptions
     {
         /// <summary>
         /// Model Name
@@ -17,5 +17,7 @@ namespace Arctron.Obj2Gltf
         /// obj and mtl files' text encoding
         /// </summary>
         public Encoding ObjEncoding { get; set; }
+
+        public Boolean RemoveDegenerateFaces { get; set; }
     }
 }

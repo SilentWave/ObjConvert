@@ -5,13 +5,13 @@ namespace Arctron.Obj2Gltf
 {
     public class BoundingBox
     {
-        public DoubleRange X { get; set; } = new DoubleRange();
+        public SingleRange X { get; set; } = new SingleRange();
 
-        public DoubleRange Y { get; set; } = new DoubleRange();
+        public SingleRange Y { get; set; } = new SingleRange();
 
-        public DoubleRange Z { get; set; } = new DoubleRange();
+        public SingleRange Z { get; set; } = new SingleRange();
 
-        public Boolean IsIn(Vec3 p)
+        public Boolean IsIn(SVec3 p)
         {
             return p.X >= X.Min && p.X <= X.Max &&
                 p.Y >= Y.Min && p.Y <= Y.Max &&
@@ -30,7 +30,7 @@ namespace Arctron.Obj2Gltf
             var diffX = (X.Max - X.Min) / level;
             var diffY = (Y.Max - Y.Min) / level;
             var diffZ = (Z.Max - Z.Min) / level;
-            for(var x = 0;x<level;x++)
+            for (var x = 0; x < level; x++)
             {
                 var xj = x + 1;
                 var maxX = X.Max;
@@ -38,7 +38,7 @@ namespace Arctron.Obj2Gltf
                 {
                     maxX = X.Min + xj * diffX;
                 }
-                for(var y =0;y<level;y++)
+                for (var y = 0; y < level; y++)
                 {
                     var yj = y + 1;
                     var maxY = Y.Max;
@@ -47,7 +47,7 @@ namespace Arctron.Obj2Gltf
                         maxY = Y.Min + yj * diffY;
                     }
 
-                    for(var z = 0;z<level;z++)
+                    for (var z = 0; z < level; z++)
                     {
                         var zj = z + 1;
                         var maxZ = Z.Max;
@@ -58,9 +58,9 @@ namespace Arctron.Obj2Gltf
 
                         boxes.Add(new BoundingBox
                         {
-                            X = new DoubleRange { Min = X.Min + x * diffX, Max = maxX },
-                            Y = new DoubleRange { Min = Y.Min + y * diffY, Max = maxY },
-                            Z = new DoubleRange { Min = Z.Min + z * diffZ, Max = maxZ }
+                            X = new SingleRange { Min = X.Min + x * diffX, Max = maxX },
+                            Y = new SingleRange { Min = Y.Min + y * diffY, Max = maxY },
+                            Z = new SingleRange { Min = Z.Min + z * diffZ, Max = maxZ }
                         });
                     }
                 }

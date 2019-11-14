@@ -34,12 +34,12 @@ namespace Arctron.Obj2Gltf
             _mtlParser = mtlParser ?? throw new ArgumentNullException(nameof(mtlParser));
         }
 
-        public (GltfModel Model, List<byte> AllBuffers) Convert(String objPath, GltfOptions options = null)
+        public GltfModel Convert(String objPath, GltfConverterOptions options = null)
         {
             if (String.IsNullOrWhiteSpace(objPath))
                 throw new ArgumentNullException(nameof(objPath));
 
-            var objModel = _objParser.Parse(objPath, options.ObjEncoding);
+            var objModel = _objParser.Parse(objPath, options.RemoveDegenerateFaces, options.ObjEncoding);
             if (!String.IsNullOrWhiteSpace(options.Name))
             {
                 objModel.Name = options.Name;
@@ -55,24 +55,28 @@ namespace Arctron.Obj2Gltf
             return Convert(objModel, objFolder, options);
         }
 
-        public (GltfModel Model, List<byte> AllBuffers) Convert(ObjModel objModel, String objFolder, GltfOptions options = null)
+        public GltfModel Convert(ObjModel objModel, String objFolder, GltfConverterOptions options = null)
         {
             if (objModel == null) throw new ArgumentNullException(nameof(objModel));
-            options = options ?? new GltfOptions();
-            var bufferState = new BufferState();
+            options = options ?? new GltfConverterOptions();
+
+            var u32IndicesEnabled = objModel.RequiresUint32Indices();
 
             var gltfModel = new GltfModel();
-            gltfModel.Scenes.Add(new Scene());
-            gltfModel.Materials.AddRange(objModel.Materials.Select(x => ConvertMaterial(x, t => GetTextureIndex(gltfModel, t))));
-            var u32IndicesEnabled = RequiresUint32Indices(objModel);
-            var meshes = objModel.Geometries.ToArray();
-            var meshesLength = meshes.Length;
-            for (var i = 0; i < meshesLength; i++)
+            using (var bufferState = new BufferState(gltfModel, objFolder, u32IndicesEnabled))
             {
-                var mesh = meshes[i];
-                if (!mesh.Faces.Any()) continue;
-                var meshIndex = AddMesh(gltfModel, objModel, bufferState, mesh, u32IndicesEnabled);
-                AddNode(gltfModel, mesh.Id, meshIndex, null);
+                gltfModel.Scenes.Add(new Scene());
+                gltfModel.Materials.AddRange(objModel.Materials.Select(x => ConvertMaterial(x, t => GetTextureIndex(gltfModel, t))));
+
+                var meshes = objModel.Geometries.ToArray();
+                var meshesLength = meshes.Length;
+                for (var i = 0; i < meshesLength; i++)
+                {
+                    var mesh = meshes[i];
+                    if (!mesh.Faces.Any()) continue;
+                    var meshIndex = AddMesh(gltfModel, objModel, bufferState, mesh);
+                    AddNode(gltfModel, mesh.Id, meshIndex, null);
+                }
             }
 
             if (gltfModel.Images.Count > 0)
@@ -86,282 +90,48 @@ namespace Arctron.Obj2Gltf
                 });
             }
 
-            var allBuffers = AddBuffers(gltfModel, bufferState, options);
-            gltfModel.Buffers.Add(new Gltf.Buffer
-            {
-                Name = options.Name,
-                ByteLength = allBuffers.Count
-            });
-            var boundary = 4;
-            FillImageBuffers(gltfModel, objFolder, allBuffers, boundary);
+            //MakeAnImageBuffer(gltfModel, objFolder, bufferState, boundary);
 
-
-            if (!options.Binary)
-            {
-                gltfModel.Buffers[0].Uri = "data:application/octet-stream;base64," + System.Convert.ToBase64String(allBuffers.ToArray());
-            }
-            return (gltfModel, allBuffers);
+            //if (!options.Binary)
+            //{
+            //    gltfModel.Buffers[0].Uri = "data:application/octet-stream;base64," + System.Convert.ToBase64String(allBuffers.ToArray());
+            //}
+            return gltfModel;
         }
 
         /// <summary>
         /// write converted data to file
         /// </summary>
         /// <param name="outputFile"></param>
-        public void WriteFile(GltfModel gltfModel, Boolean binary, String outputFile, List<Byte> allbuffers = null)
+        public void WriteFile(GltfModel gltfModel, String outputFile)
         {
             if (gltfModel == null) throw new ArgumentNullException();
-            if (binary)
+            using (var file = File.CreateText(outputFile))
             {
-                if (allbuffers == null) throw new ArgumentNullException(nameof(allbuffers));
-                var _glb = GltfToGlb(gltfModel, allbuffers);
-                File.WriteAllBytes(outputFile, _glb.ToArray());
-            }
-            else
-            {
-                var json = ToJson(gltfModel);
-                File.WriteAllText(outputFile, json);
+                ToJson(gltfModel, file);
             }
         }
 
-        private static String ToJson(Object model)
+        private static void ToJson(Object model, StreamWriter sw)
         {
-            return JsonConvert.SerializeObject(model,
-                    new JsonSerializerSettings
-                    {
-                        NullValueHandling = NullValueHandling.Ignore,
-                        Formatting = Formatting.Indented,
-                        ContractResolver = new CustomContractResolver()
-                    });
-        }
-
-        private Boolean CheckWindingCorrect(Vec3 a, Vec3 b, Vec3 c, Vec3 normal)
-        {
-            var ba = new Vec3(b.X - a.X, b.Y - a.Y, b.Z - a.Z);
-            var ca = new Vec3(c.X - a.X, c.Y - a.Y, c.Z - a.Z);
-            var cross = Vec3.Cross(ba, ca);
-
-            return Vec3.Dot(normal, cross) > 0;
-
-        }
-
-        private Boolean RequiresUint32Indices(ObjModel objModel)
-        {
-            return objModel.Vertices.Count > 65534;
-        }
-
-        #region Buffers
-
-        private List<Byte> GltfToGlb(GltfModel gltfModel, List<Byte> binaryBuffer)
-        {
-            var buffer = gltfModel.Buffers[0];
-            if (!String.IsNullOrEmpty(buffer.Uri))
+            var serializer = new JsonSerializer
             {
-                binaryBuffer = new List<Byte>();
-            }
-            var jsonBuffer = GetJsonBufferPadded(gltfModel);
-            // Allocate buffer (Global header) + (JSON chunk header) + (JSON chunk) + (Binary chunk header) + (Binary chunk)
-            var glbLength = 12 + 8 + jsonBuffer.Length + 8 + binaryBuffer.Count;
-
-            var glb = new List<Byte>(glbLength);
-
-            // Write binary glTF header (magic, version, length)
-            var byteOffset = 0;
-            glb.AddRange(BitConverter.GetBytes((UInt32)0x46546C67));
-            byteOffset += 4;
-            glb.AddRange(BitConverter.GetBytes((UInt32)2));
-            byteOffset += 4;
-            glb.AddRange(BitConverter.GetBytes((UInt32)glbLength));
-            byteOffset += 4;
-
-            // Write JSON Chunk header (length, type)
-            glb.AddRange(BitConverter.GetBytes((UInt32)jsonBuffer.Length));
-            byteOffset += 4;
-            glb.AddRange(BitConverter.GetBytes((UInt32)0x4E4F534A)); // Json
-            byteOffset += 4;
-            // Write JSON Chunk
-            glb.AddRange(jsonBuffer);
-            byteOffset += jsonBuffer.Length;
-
-            // Write Binary Chunk header (length, type)
-            glb.AddRange(BitConverter.GetBytes((UInt32)binaryBuffer.Count));
-            byteOffset += 4;
-            glb.AddRange(BitConverter.GetBytes((UInt32)0x004E4942)); // BIN
-                                                                     // Write Binary Chunk
-            glb.AddRange(binaryBuffer);
-
-            return glb;
-        }
-
-        /// <summary>
-        /// padding json buffer
-        /// </summary>
-        /// <param name="model"></param>
-        /// <param name="boundary"></param>
-        /// <param name="offset">The byte offset on which the buffer starts.</param>
-        /// <returns></returns>
-        public static Byte[] GetJsonBufferPadded(Object model, Int32 boundary = 4, Int32 offset = 0)
-        {
-            var json = ToJson(model);
-            var bs = Encoding.UTF8.GetBytes(json);
-            var remainder = (offset + bs.Length) % boundary;
-            var padding = (remainder == 0) ? 0 : boundary - remainder;
-            for (var i = 0; i < padding; i++)
-            {
-                json += " ";
-            }
-            return Encoding.UTF8.GetBytes(json);
-        }
-
-        private Int32 AddIndexArray(GltfModel gltfModel, Int32[] indices, Boolean u32IndicesEnabled, String name)
-        {
-            var cType = u32IndicesEnabled ? ComponentType.U32 : ComponentType.U16;
-
-            var count = indices.Length;
-            var minMax = new DoubleRange();
-            UpdateMinMax(indices.Select(c => (Double)c).ToArray(), minMax);
-
-            var accessor = new Accessor
-            {
-                Type = AccessorType.SCALAR,
-                ComponentType = cType,
-                Count = count,
-                Min = new[] { Math.Round(minMax.Min) },
-                Max = new[] { Math.Round(minMax.Max) },
-                Name = name
+                NullValueHandling = NullValueHandling.Ignore,
+                Formatting = Formatting.Indented,
+                ContractResolver = new CustomContractResolver()
             };
-
-            var index = gltfModel.Accessors.Count;
-            gltfModel.Accessors.Add(accessor);
-            return index;
+            serializer.Serialize(sw, model);
         }
 
-        private static Byte[] ToU32Buffer(Int32[] arr)
+        private Boolean CheckWindingCorrect(SVec3 a, SVec3 b, SVec3 c, SVec3 normal)
         {
-            var bytes = new List<Byte>();
-            foreach (var i in arr)
-            {
-                bytes.AddRange(BitConverter.GetBytes((UInt32)i));
-            }
-            return bytes.ToArray();
+            var ba = new SVec3(b.X - a.X, b.Y - a.Y, b.Z - a.Z);
+            var ca = new SVec3(c.X - a.X, c.Y - a.Y, c.Z - a.Z);
+            var cross = SVec3.Cross(ba, ca);
+
+            return SVec3.Dot(normal, cross) > 0;
         }
 
-        private static Byte[] ToU16Buffer(Int32[] arr)
-        {
-            var bytes = new List<Byte>();
-            foreach (var i in arr)
-            {
-                bytes.AddRange(BitConverter.GetBytes((UInt16)i));
-            }
-            return bytes.ToArray();
-        }
-        /// <summary>
-        /// padding buffers with boundary
-        /// </summary>
-        /// <param name="buffers"></param>
-        /// <param name="boundary"></param>
-        public static void PaddingBuffers(List<Byte> buffers, Int32 boundary = 4)
-        {
-            var length = buffers.Count;
-            var remainder = length % boundary;
-            if (remainder != 0)
-            {
-                var padding = boundary - remainder;
-                for (var i = 0; i < padding; i++)
-                {
-                    buffers.Add(0);
-                }
-            }
-        }
-
-        private List<Byte> AddBuffers(GltfModel gltfModel, BufferState bufferState, GltfOptions options)
-        {
-            AddBufferView(gltfModel, bufferState.PositionBuffers, bufferState.PositionAccessors.ToArray(), 12, 0x8892);
-            AddBufferView(gltfModel, bufferState.NormalBuffers, bufferState.NormalAccessors.ToArray(), 12, 0x8892);
-            AddBufferView(gltfModel, bufferState.UvBuffers, bufferState.UvAccessors.ToArray(), 8, 0x8892); // ARRAY_BUFFER
-            AddBufferView(gltfModel, bufferState.IndexBuffers, bufferState.IndexAccessors.ToArray(), null, 0x8893); // ELEMENT_ARRAY_BUFFER
-
-            var buffers = new List<Byte>();
-            foreach (var b in bufferState.PositionBuffers)
-            {
-                buffers.AddRange(b);
-            }
-            foreach (var b in bufferState.NormalBuffers)
-            {
-                buffers.AddRange(b);
-            }
-            foreach (var b in bufferState.UvBuffers)
-            {
-                buffers.AddRange(b);
-            }
-            foreach (var b in bufferState.IndexBuffers)
-            {
-                buffers.AddRange(b);
-            }
-            PaddingBuffers(buffers);
-            return buffers;
-        }
-
-        private void AddBufferView(GltfModel gltfModel,
-                                   List<Byte[]> buffers,
-                                   Int32[] accessors,
-                                   Int32? byteStride,
-                                   Int32? target)
-        {
-            if (buffers.Count == 0) return;
-
-            BufferView previousBufferView = null;
-            if (gltfModel.BufferViews.Count > 0)
-            {
-                previousBufferView = gltfModel.BufferViews[gltfModel.BufferViews.Count - 1];
-            }
-            var byteOffset = previousBufferView != null ?
-                previousBufferView.ByteOffset + previousBufferView.ByteLength : 0;
-            var byteLength = 0;
-            var bufferViewIndex = gltfModel.BufferViews.Count;
-            for (var i = 0; i < buffers.Count; i++)
-            {
-                var accessor = gltfModel.Accessors[accessors[i]];
-                accessor.BufferView = bufferViewIndex;
-                accessor.ByteOffset = byteLength;
-                byteLength += buffers[i].Length;
-            }
-            var bf = new BufferView
-            {
-                Name = "bufferView_" + bufferViewIndex,
-                Buffer = 0,
-                ByteLength = byteLength,
-                ByteOffset = byteOffset,
-                ByteStride = byteStride,
-                Target = target
-            };
-            gltfModel.BufferViews.Add(bf);
-        }
-
-        private void FillImageBuffers(GltfModel gltfModel, String objFolder, List<Byte> buffers, Int32 boundary)
-        {
-            var bufferViewIndex = gltfModel.BufferViews.Count;
-            var byteOffset = buffers.Count;
-            foreach (var img in gltfModel.Images)
-            {
-                var imageFile = Path.Combine(objFolder, img.Name);
-                var textureSource = File.ReadAllBytes(imageFile);
-                var textureByteLength = textureSource.Length;
-                img.BufferView = gltfModel.BufferViews.Count;
-                gltfModel.BufferViews.Add(new BufferView
-                {
-                    Buffer = 0,
-                    ByteOffset = byteOffset,
-                    ByteLength = textureByteLength
-                });
-                byteOffset += textureByteLength;
-                buffers.AddRange(textureSource);
-            }
-            // Padding Buffers
-            PaddingBuffers(buffers);
-            gltfModel.Buffers[0].ByteLength = buffers.Count;
-        }
-
-        #endregion Buffers
 
         #region Materials
 
@@ -383,24 +153,9 @@ namespace Arctron.Obj2Gltf
             var image = new Image
             {
                 Name = textureFilename,
-                BufferView = 0
+                Uri = textureFilename
             };
-            var ext = Path.GetExtension(textureFilename).ToUpper();
-            switch (ext)
-            {
-                case ".PNG":
-                    image.MimeType = "image/png";
-                    break;
-                case ".JPEG":
-                case ".JPG":
-                    image.MimeType = "image/jpeg";
-                    break;
-                case ".GIF":
-                    image.MimeType = "image/gif";
-                    break;
-            }
-            var imageIndex = gltfModel.Images.Count;
-            gltfModel.Images.Add(image);
+            var imageIndex = gltfModel.AddImage(image);
 
             var textureIndex = gltfModel.Textures.Count;
             var t = new Gltf.Texture
@@ -412,6 +167,8 @@ namespace Arctron.Obj2Gltf
             gltfModel.Textures.Add(t);
             return textureIndex;
         }
+
+        
 
         private Gltf.Material GetDefault(String name = "default", AlphaMode mode = AlphaMode.OPAQUE)
         {
@@ -567,9 +324,9 @@ namespace Arctron.Obj2Gltf
 
         #region Meshes
 
-        private Int32 AddMesh(GltfModel gltfModel, ObjModel objModel, BufferState buffer, Geometry mesh, Boolean uint32Indices)
+        private Int32 AddMesh(GltfModel gltfModel, ObjModel objModel, BufferState buffer, Geometry mesh)
         {
-            var ps = AddVertexAttributes(gltfModel, objModel, buffer, mesh, uint32Indices);
+            var ps = AddVertexAttributes(gltfModel, objModel, buffer, mesh);
 
             var m = new Mesh
             {
@@ -579,36 +336,12 @@ namespace Arctron.Obj2Gltf
             var meshIndex = gltfModel.Meshes.Count;
             gltfModel.Meshes.Add(m);
             return meshIndex;
-
         }
-
-        /// <summary>
-        /// update bounding box with double array
-        /// </summary>
-        /// <param name="vs"></param>
-        /// <param name="minMax"></param>
-
-        public static void UpdateMinMax(Double[] vs, DoubleRange minMax)
-        {
-            var min = vs.Min();
-            var max = vs.Max();
-            if (minMax.Min > min)
-            {
-                minMax.Min = min;
-            }
-            if (minMax.Max < max)
-            {
-                minMax.Max = max;
-            }
-        }
-
-
 
         private List<Primitive> AddVertexAttributes(GltfModel gltfModel,
                                                     ObjModel objModel,
-                                                    BufferState buffers,
-                                                    Geometry mesh,
-                                                    Boolean uint32Indices)
+                                                    BufferState bufferState,
+                                                    Geometry mesh)
         {
             var facesGroup = mesh.Faces.GroupBy(c => c.MatName);
             var faces = new List<Face>();
@@ -627,9 +360,6 @@ namespace Arctron.Obj2Gltf
             }
 
             var hasPositions = faces.Count > 0;
-            var hasUvs = faces.Any(c => c.Triangles.Any(d => d.V1.T > 0));
-            var hasNormals = faces.Any(c => c.Triangles.Any(d => d.V1.N > 0));
-
 
             // Vertex attributes are shared by all primitives in the mesh
             var name0 = mesh.Id;
@@ -643,210 +373,39 @@ namespace Arctron.Obj2Gltf
                 {
                     faceName = name0 + "_" + index;
                 }
-                var materialIndex = GetMaterialIndexOrDefault(gltfModel, objModel, f.MatName);
-                var material = objModel.Materials[materialIndex];
-                var materialHasTexture = material.DiffuseTextureFile != null;
 
-                DoubleRange vmmX = new DoubleRange(), vmmY = new DoubleRange(), vmmZ = new DoubleRange();
-                DoubleRange nmmX = new DoubleRange(), nmmY = new DoubleRange(), nmmZ = new DoubleRange();
-                DoubleRange tmmX = new DoubleRange(), tmmY = new DoubleRange();
-                var vList = 0;
-                var nList = 0;
-                var tList = 0;
-                var vs = new List<Byte>(); // vertexBuffers
-                var ns = new List<Byte>(); // normalBuffers
-                var ts = new List<Byte>(); // textureBuffers
+                var hasUvs = f.Triangles.Any(d => d.V1.T > 0);
+                var hasNormals = f.Triangles.Any(d => d.V1.N > 0);
+
+                var materialIndex = GetMaterialIndexOrDefault(gltfModel, objModel, f.MatName);
+                var material = materialIndex < objModel.Materials.Count ? objModel.Materials[materialIndex] : null;
+                var materialHasTexture = material?.DiffuseTextureFile != null;
+
 
                 // every primitive need their own vertex indices(v,t,n)
-                var FaceVertexCache = new Dictionary<String, Int32>();
-                var FaceVertexCount = 0;
+                var faceVertexCache = new Dictionary<String, Int32>();
+                var faceVertexCount = 0;
 
                 //List<int[]> indiceList = new List<int[]>(faces.Count * 2);
                 //var matIndexList = new List<int>(faces.Count * 2);
 
-                // f is a primitive
-                var iList = new List<Int32>(f.Triangles.Count * 3 * 2); // primitive indices
-                foreach (var triangle in f.Triangles)
-                {
-                    var v1Index = triangle.V1.V - 1;
-                    var v2Index = triangle.V2.V - 1;
-                    var v3Index = triangle.V3.V - 1;
-                    var v1 = objModel.Vertices[v1Index];
-                    var v2 = objModel.Vertices[v2Index];
-                    var v3 = objModel.Vertices[v3Index];
-                    UpdateMinMax(new[] { v1.X, v2.X, v3.X }, vmmX);
-                    UpdateMinMax(new[] { v1.Y, v2.Y, v3.Y }, vmmY);
-                    UpdateMinMax(new[] { v1.Z, v2.Z, v3.Z }, vmmZ);
-
-                    Vec3 n1 = new Vec3(), n2 = new Vec3(), n3 = new Vec3();
-                    if (triangle.V1.N > 0) // hasNormals
-                    {
-                        var n1Index = triangle.V1.N - 1;
-                        var n2Index = triangle.V2.N - 1;
-                        var n3Index = triangle.V3.N - 1;
-                        n1 = objModel.Normals[n1Index];
-                        n2 = objModel.Normals[n2Index];
-                        n3 = objModel.Normals[n3Index];
-                        UpdateMinMax(new[] { n1.X, n2.X, n3.X }, nmmX);
-                        UpdateMinMax(new[] { n1.Y, n2.Y, n3.Y }, nmmY);
-                        UpdateMinMax(new[] { n1.Z, n2.Z, n3.Z }, nmmZ);
-                    }
-
-                    Vec2 t1 = new Vec2(), t2 = new Vec2(), t3 = new Vec2();
-                    if (materialHasTexture)
-                    {
-                        if (triangle.V1.T > 0) // hasUvs
-                        {
-                            var t1Index = triangle.V1.T - 1;
-                            var t2Index = triangle.V2.T - 1;
-                            var t3Index = triangle.V3.T - 1;
-                            t1 = objModel.Uvs[t1Index];
-                            t2 = objModel.Uvs[t2Index];
-                            t3 = objModel.Uvs[t3Index];
-                            UpdateMinMax(new[] { t1.U, t2.U, t3.U }, tmmX);
-                            UpdateMinMax(new[] { 1 - t1.V, 1 - t2.V, 1 - t3.V }, tmmY);
-                        }
-                    }
-
-                    var v1Str = triangle.V1.ToString();
-                    if (!FaceVertexCache.ContainsKey(v1Str))
-                    {
-                        FaceVertexCache.Add(v1Str, FaceVertexCount++);
-
-                        vList++; 
-                        vs.AddRange(v1.ToFloatBytes());
-                        if (triangle.V1.N > 0) // hasNormals
-                        {
-                            nList++;
-                            ns.AddRange(n1.ToFloatBytes());
-                        }
-                        if (materialHasTexture)
-                        {
-                            if (triangle.V1.T > 0) // hasUvs
-                            {
-                                tList++;
-                                ts.AddRange(new Vec2(t1.U, 1 - t1.V).ToFloatBytes());
-                            }
-                        }
-                    }
-
-                    var v2Str = triangle.V2.ToString();
-                    if (!FaceVertexCache.ContainsKey(v2Str))
-                    {
-                        FaceVertexCache.Add(v2Str, FaceVertexCount++);
-
-                        vList++; 
-                        vs.AddRange(v2.ToFloatBytes());
-                        if (triangle.V2.N > 0) // hasNormals
-                        {
-                            nList++; 
-                            ns.AddRange(n2.ToFloatBytes());
-                        }
-                        if (materialHasTexture)
-                        {
-                            if (triangle.V2.T > 0) // hasUvs
-                            {
-                                tList++; 
-                                ts.AddRange(new Vec2(t2.U, 1 - t2.V).ToFloatBytes());
-                            }
-                        }
-                    }
-
-                    var v3Str = triangle.V3.ToString();
-                    if (!FaceVertexCache.ContainsKey(v3Str))
-                    {
-                        FaceVertexCache.Add(v3Str, FaceVertexCount++);
-
-                        vList++;
-                        vs.AddRange(v3.ToFloatBytes());
-                        if (triangle.V3.N > 0) // hasNormals
-                        {
-                            nList++;
-                            ns.AddRange(n3.ToFloatBytes());
-                        }
-                        if (materialHasTexture)
-                        {
-                            if (triangle.V3.T > 0) // hasUvs
-                            {
-                                tList++;
-                                ts.AddRange(new Vec2(t3.U, 1 - t3.V).ToFloatBytes());
-                            }
-                        }
-                    }
-
-                    // Vertex Indices
-                    var correctWinding = CheckWindingCorrect(v1, v2, v3, n1);
-                    if (correctWinding)
-                    {
-                        iList.AddRange(new[] {
-                            FaceVertexCache[v1Str],
-                            FaceVertexCache[v2Str],
-                            FaceVertexCache[v3Str]
-                        });
-                    }
-                    else
-                    {
-                        iList.AddRange(new[] {
-                            FaceVertexCache[v1Str],
-                            FaceVertexCache[v3Str],
-                            FaceVertexCache[v2Str]
-                        });
-                    }
-                }
-
                 var atts = new Dictionary<String, Int32>();
-
-                var accessorIndex = gltfModel.Accessors.Count;
-                var accessorVertex = new Accessor
-                {
-                    Min = new Double[] { vmmX.Min, vmmY.Min, vmmZ.Min },
-                    Max = new Double[] { vmmX.Max, vmmY.Max, vmmZ.Max },
-                    Type = AccessorType.VEC3,
-                    Count = vList,
-                    ComponentType = ComponentType.F32,
-                    Name = faceName + "_positions"
-                };
-                gltfModel.Accessors.Add(accessorVertex);
+                var indicesAccessorIndex = bufferState.MakeIndicesAccessor(faceName + "_indices");
+                var accessorIndex = bufferState.MakePositionAccessor(faceName + "_positions");
                 atts.Add("POSITION", accessorIndex);
-                buffers.PositionBuffers.Add(vs.ToArray());
-                buffers.PositionAccessors.Add(accessorIndex);
 
-                if (nList > 0) //hasNormals)
+                if (hasNormals)
                 {
-                    accessorIndex = gltfModel.Accessors.Count;
-                    var accessorNormal = new Accessor
-                    {
-                        Min = new Double[] { nmmX.Min, nmmY.Min, nmmZ.Min },
-                        Max = new Double[] { nmmX.Max, nmmY.Max, nmmZ.Max },
-                        Type = AccessorType.VEC3,
-                        Count = nList,
-                        ComponentType = ComponentType.F32,
-                        Name = faceName + "_normals"
-                    };
-                    gltfModel.Accessors.Add(accessorNormal);
-                    atts.Add("NORMAL", accessorIndex);
-                    buffers.NormalBuffers.Add(ns.ToArray());
-                    buffers.NormalAccessors.Add(accessorIndex);
+                    var normalsAccessorIndex = bufferState.MakeNormalAccessors(faceName + "_normals");
+                    atts.Add("NORMAL", normalsAccessorIndex);
                 }
 
                 if (materialHasTexture)
                 {
-                    if (tList > 0) //hasUvs)
+                    if (hasUvs)
                     {
-                        accessorIndex = gltfModel.Accessors.Count;
-                        var accessorUv = new Accessor
-                        {
-                            Min = new Double[] { tmmX.Min, tmmY.Min },
-                            Max = new Double[] { tmmX.Max, tmmY.Max },
-                            Type = AccessorType.VEC2,
-                            Count = tList,
-                            ComponentType = ComponentType.F32,
-                            Name = faceName + "_texcoords"
-                        };
-                        gltfModel.Accessors.Add(accessorUv);
-                        atts.Add("TEXCOORD_0", accessorIndex);
-                        buffers.UvBuffers.Add(ts.ToArray());
-                        buffers.UvAccessors.Add(accessorIndex);
+                        var uvAccessorIndex = bufferState.MakeUvAccessor(faceName + "_texcoords");
+                        atts.Add("TEXCOORD_0", uvAccessorIndex);
                     }
                     else
                     {
@@ -858,18 +417,134 @@ namespace Arctron.Obj2Gltf
                     }
                 }
 
+                // f is a primitive
+                var iList = new List<Int32>(f.Triangles.Count * 3 * 2); // primitive indices
+                foreach (var triangle in f.Triangles)
+                {
+                    var v1Index = triangle.V1.V - 1;
+                    var v2Index = triangle.V2.V - 1;
+                    var v3Index = triangle.V3.V - 1;
+                    var v1 = objModel.Vertices[v1Index];
+                    var v2 = objModel.Vertices[v2Index];
+                    var v3 = objModel.Vertices[v3Index];
 
-                var indices = iList.ToArray();
-                var indexAccessorIndex = AddIndexArray(gltfModel, indices, uint32Indices, faceName + "_indices");
-                var indexBuffer = uint32Indices ? ToU32Buffer(indices) : ToU16Buffer(indices);
-                buffers.IndexBuffers.Add(indexBuffer);
-                buffers.IndexAccessors.Add(indexAccessorIndex);
+                    SVec3 n1 = new SVec3(), n2 = new SVec3(), n3 = new SVec3();
+                    if (triangle.V1.N > 0) // hasNormals
+                    {
+                        var n1Index = triangle.V1.N - 1;
+                        var n2Index = triangle.V2.N - 1;
+                        var n3Index = triangle.V3.N - 1;
+                        n1 = objModel.Normals[n1Index];
+                        n2 = objModel.Normals[n2Index];
+                        n3 = objModel.Normals[n3Index];
+                    }
+
+                    SVec2 t1 = new SVec2(), t2 = new SVec2(), t3 = new SVec2();
+                    if (materialHasTexture)
+                    {
+                        if (triangle.V1.T > 0) // hasUvs
+                        {
+                            var t1Index = triangle.V1.T - 1;
+                            var t2Index = triangle.V2.T - 1;
+                            var t3Index = triangle.V3.T - 1;
+                            t1 = objModel.Uvs[t1Index];
+                            t2 = objModel.Uvs[t2Index];
+                            t3 = objModel.Uvs[t3Index];
+                        }
+                    }
+
+                    var v1Str = triangle.V1.ToString();
+                    if (!faceVertexCache.ContainsKey(v1Str))
+                    {
+                        faceVertexCache.Add(v1Str, faceVertexCount++);
+
+                        bufferState.AddPosition(v1);
+
+                        if (triangle.V1.N > 0) // hasNormals
+                        {
+                            bufferState.AddNormal(n1);
+                        }
+                        if (materialHasTexture)
+                        {
+                            if (triangle.V1.T > 0) // hasUvs
+                            {
+                                var uv = new SVec2(t1.U, 1 - t1.V);
+                                bufferState.AddUv(uv);
+                            }
+                        }
+                    }
+
+                    var v2Str = triangle.V2.ToString();
+                    if (!faceVertexCache.ContainsKey(v2Str))
+                    {
+                        faceVertexCache.Add(v2Str, faceVertexCount++);
+
+                        bufferState.AddPosition(v2);
+                        if (triangle.V2.N > 0) // hasNormals
+                        {
+                            bufferState.AddNormal(n2);
+                        }
+                        if (materialHasTexture)
+                        {
+                            if (triangle.V2.T > 0) // hasUvs
+                            {
+                              
+                                var uv = new SVec2(t2.U, 1 - t2.V);
+                                bufferState.AddUv(uv);
+                            }
+                        }
+                    }
+
+                    var v3Str = triangle.V3.ToString();
+                    if (!faceVertexCache.ContainsKey(v3Str))
+                    {
+                        faceVertexCache.Add(v3Str, faceVertexCount++);
+
+                        bufferState.AddPosition(v3);
+                        if (triangle.V3.N > 0) // hasNormals
+                        {
+                            bufferState.AddNormal(n3);
+                        }
+                        if (materialHasTexture)
+                        {
+                            if (triangle.V3.T > 0) // hasUvs
+                            {
+                                var uv = new SVec2(t3.U, 1 - t3.V);
+                                bufferState.AddUv(uv);
+                            }
+                        }
+                    }
+
+                    // Vertex Indices
+                    var correctWinding = CheckWindingCorrect(v1, v2, v3, n1);
+                    if (correctWinding)
+                    {
+                        iList.AddRange(new[] {
+                            faceVertexCache[v1Str],
+                            faceVertexCache[v2Str],
+                            faceVertexCache[v3Str]
+                        });
+                    }
+                    else
+                    {
+                        iList.AddRange(new[] {
+                            faceVertexCache[v1Str],
+                            faceVertexCache[v3Str],
+                            faceVertexCache[v2Str]
+                        });
+                    }
+                }
+
+                foreach (var i in iList)
+                {
+                    bufferState.AddIndex(i);
+                }
 
                 var p = new Primitive
                 {
                     Attributes = atts,
-                    Indices = indexAccessorIndex,
-                    Material = materialIndex,//matIndexList[i],
+                    Indices = indicesAccessorIndex,
+                    Material = materialIndex,
                     Mode = MeshMode.Triangles
                 };
                 ps.Add(p);
@@ -913,24 +588,6 @@ namespace Arctron.Obj2Gltf
             }
 
             return materialIndex;
-        }
-
-        private Int32 AddBatchIdAttribute(GltfModel gltfModel, Int32 batchId, Int32 count, String name)
-        {
-            //var ctype = u32IndicesEnabled ? ComponentType.U32 : ComponentType.U16;
-            var ctype = ComponentType.U16;
-            var accessor = new Accessor
-            {
-                Name = name,
-                ComponentType = ctype,
-                Count = count,
-                Min = new Double[] { batchId },
-                Max = new Double[] { batchId },
-                Type = AccessorType.SCALAR
-            };
-            var accessorIndex = gltfModel.Accessors.Count;
-            gltfModel.Accessors.Add(accessor);
-            return accessorIndex;
         }
 
         private Int32 AddNode(GltfModel gltfModel, String name, Int32? meshIndex, Int32? parentIndex = null)

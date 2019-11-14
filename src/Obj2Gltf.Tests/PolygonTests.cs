@@ -11,17 +11,17 @@ namespace Arctron.Obj2Gltf.Tests
         [Fact]
         public void Test_Intersect()
         {
-            var pnts = new List<Vec2>
+            var pnts = new List<SVec2>
             {
-                new Vec2(0.0, 0.0), new Vec2(1.0, 0.0), new Vec2(1.0,1.0), new Vec2(0.5,0.5), new Vec2(0.0,1.0)
+                new SVec2(0.0f, 0.0f), new SVec2(1.0f, 0.0f), new SVec2(1.0f,1.0f), new SVec2(0.5f,0.5f), new SVec2(0.0f,1.0f)
             };
-            var tol = 1e-10;
-            Assert.Equal(PolygonPointRes.Vetex, PolygonUtil.CrossTest(new Vec2(0.0, 0.0), pnts, tol));
-            Assert.Equal(PolygonPointRes.Edge, PolygonUtil.CrossTest(new Vec2(0.1, 0.0), pnts, tol));
-            Assert.Equal(PolygonPointRes.Outside, PolygonUtil.CrossTest(new Vec2(0.5, 0.6), pnts, tol));
-            Assert.Equal(PolygonPointRes.Outside, PolygonUtil.CrossTest(new Vec2(0.5, 0.500001), pnts, tol));
-            Assert.Equal(PolygonPointRes.Inside, PolygonUtil.CrossTest(new Vec2(0.5, 0.499999), pnts, tol));
-            Assert.Equal(PolygonPointRes.Outside, PolygonUtil.CrossTest(new Vec2(1.5, 0.5), pnts, tol));
+            var tol = 1e-8f;
+            Assert.Equal(PolygonPointRes.Vertex, PolygonUtil.CrossTest(new SVec2(0.0f, 0.0f), pnts, tol));
+            Assert.Equal(PolygonPointRes.Edge, PolygonUtil.CrossTest(new SVec2(0.1f, 0.0f), pnts, tol));
+            Assert.Equal(PolygonPointRes.Outside, PolygonUtil.CrossTest(new SVec2(0.5f, 0.6f), pnts, tol));
+            Assert.Equal(PolygonPointRes.Outside, PolygonUtil.CrossTest(new SVec2(0.5f, 0.500001f), pnts, tol));
+            Assert.Equal(PolygonPointRes.Inside, PolygonUtil.CrossTest(new SVec2(0.5f, 0.499999f), pnts, tol));
+            Assert.Equal(PolygonPointRes.Outside, PolygonUtil.CrossTest(new SVec2(1.5f, 0.5f), pnts, tol));
         }
 
         [Fact]
@@ -29,9 +29,9 @@ namespace Arctron.Obj2Gltf.Tests
         {
             var box = new BoundingBox
             {
-                X = new DoubleRange { Min = 0, Max = 10 },
-                Y = new DoubleRange { Min = 0, Max = 10 },
-                Z = new DoubleRange { Min = 0, Max = 10 }
+                X = new SingleRange { Min = 0, Max = 10 },
+                Y = new SingleRange { Min = 0, Max = 10 },
+                Z = new SingleRange { Min = 0, Max = 10 }
             };
 
             var boxes = box.Split(2);

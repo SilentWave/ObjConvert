@@ -31,14 +31,14 @@ namespace Arctron.Gltf
         /// Minimum value of each component in this attribute.
         /// </summary>
         [JsonProperty("min")]
-        [JsonConverter(typeof(DoubleArrayJsonConverter))]
-        public Double[] Min { get; set; }
+        [JsonConverter(typeof(SingleArrayJsonConverter))]
+        public Single[] Min { get; set; }
         /// <summary>
         /// Maximum value of each component in this attribute.
         /// </summary>
         [JsonProperty("max")]
-        [JsonConverter(typeof(DoubleArrayJsonConverter))]
-        public Double[] Max { get; set; }
+        [JsonConverter(typeof(SingleArrayJsonConverter))]
+        public Single[] Max { get; set; }
         /// <summary>
         /// Specifies if the attribute is a scalar, vector, or matrix.
         /// </summary>
@@ -54,6 +54,6 @@ namespace Arctron.Gltf
         /// The offset relative to the start of the parent `BufferView` in bytes.
         /// </summary>
         [JsonProperty("byteOffset")]
-        public Int32 ByteOffset { get; set; }
+        public Int64 ByteOffset { get; set; }
     }
 }

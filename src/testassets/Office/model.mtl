@@ -6,7 +6,7 @@ Kd 1 1 1
 newmtl Mat
 Ka 1 1 1
 Kd 0.80000001192093 0.80000001192093 0.80000001192093
-map_Kd w609_4.jpg
+map_Kd texture\server top, bottom, side.jpg
 Ks 1 1 1
 Ns 50
 illum 7
@@ -14,7 +14,7 @@ illum 7
 newmtl Mat_1
 Ka 1 1 1
 Kd 0.80000001192093 0.80000001192093 0.80000001192093
-map_Kd serverguy-dedicated-servers.png
+map_Kd texture\server front.png
 Ks 1 1 1
 Ns 50
 illum 7
@@ -22,7 +22,7 @@ illum 7
 newmtl Mat_2
 Ka 1 1 1
 Kd 0.80000001192093 0.80000001192093 0.80000001192093
-map_Kd 4U36_back.jpg
+map_Kd texture\Server_back side.jpg
 Ks 1 1 1
 Ns 50
 illum 7
