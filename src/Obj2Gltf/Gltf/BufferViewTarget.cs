@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Arctron.Gltf
+namespace SilentWave.Gltf
 {
     public enum BufferViewTarget
     {

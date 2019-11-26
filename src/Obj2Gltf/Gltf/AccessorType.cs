@@ -1,4 +1,4 @@
-﻿namespace Arctron.Gltf
+﻿namespace SilentWave.Gltf
 {
     /// <summary>
     /// Specifies whether an attribute, vector, or matrix.

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Arctron.Obj2Gltf.WaveFront
+namespace SilentWave.Obj2Gltf.WaveFront
 {
     /// <summary>
     /// <para>Another way to represent a color, instead of classical Bytes it uses Doubles and the color components are factors (0-1 range)</para>

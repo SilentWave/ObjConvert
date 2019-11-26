@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-namespace Arctron.Gltf
+namespace SilentWave.Gltf
 {
     /// <summary>
     /// Geometry to be rendered with the given material.

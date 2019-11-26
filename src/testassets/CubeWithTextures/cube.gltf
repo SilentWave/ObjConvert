@@ -50,29 +50,29 @@
     }
   ],
   "asset": {
-    "generator": "arctron",
+    "generator": "SilentWave",
     "version": "2.0"
   },
   "buffers": [
     {
       "name": "Indices",
       "byteLength": 72,
-      "uri": "Indices.bin"
+      "uri": "cube_Indices.bin"
     },
     {
       "name": "Positions",
       "byteLength": 288,
-      "uri": "Positions.bin"
+      "uri": "cube_Positions.bin"
     },
     {
       "name": "Normals",
       "byteLength": 288,
-      "uri": "Normals.bin"
+      "uri": "cube_Normals.bin"
     },
     {
       "name": "Uvs",
       "byteLength": 192,
-      "uri": "Uvs.bin"
+      "uri": "cube_Uvs.bin"
     }
   ],
   "bufferViews": [
@@ -88,19 +88,22 @@
       "buffer": 1,
       "byteLength": 288,
       "byteOffset": 0,
+      "byteStride": 12,
       "target": 34962
     },
     {
       "name": "Normals",
       "buffer": 2,
       "byteLength": 288,
-      "byteOffset": 0
+      "byteOffset": 0,
+      "byteStride": 12
     },
     {
       "name": "Uvs",
       "buffer": 3,
       "byteLength": 192,
-      "byteOffset": 0
+      "byteOffset": 0,
+      "byteStride": 8
     }
   ],
   "images": [

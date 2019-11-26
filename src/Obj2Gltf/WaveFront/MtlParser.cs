@@ -5,7 +5,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
 
-namespace Arctron.Obj2Gltf.WaveFront
+namespace SilentWave.Obj2Gltf.WaveFront
 {
     public class MtlParser : IMtlParser
     {

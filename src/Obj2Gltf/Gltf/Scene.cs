@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace Arctron.Gltf
+namespace SilentWave.Gltf
 {
     /// <summary>
     /// The root `Node`s of a scene.

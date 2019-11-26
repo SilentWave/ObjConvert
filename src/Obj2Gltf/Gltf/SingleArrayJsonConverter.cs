@@ -4,7 +4,7 @@ using System.Text;
 using System.Linq;
 using Newtonsoft.Json;
 
-namespace Arctron.Gltf
+namespace SilentWave.Gltf
 {
     /// <summary>
     /// Convert to int[] when all values are equals integers

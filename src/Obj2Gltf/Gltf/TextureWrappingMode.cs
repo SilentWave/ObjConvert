@@ -1,4 +1,4 @@
-﻿namespace Arctron.Gltf
+﻿namespace SilentWave.Gltf
 {
     /// <summary>
     /// Texture co-ordinate wrapping mode.

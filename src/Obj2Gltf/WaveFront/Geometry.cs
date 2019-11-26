@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 
-namespace Arctron.Obj2Gltf.WaveFront
+namespace SilentWave.Obj2Gltf.WaveFront
 {
     /// <summary>
     /// geometry with face meshes

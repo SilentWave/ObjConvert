@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Arctron.Obj2Gltf.WaveFront
+namespace SilentWave.Obj2Gltf.WaveFront
 {
     static class Extensions
     {

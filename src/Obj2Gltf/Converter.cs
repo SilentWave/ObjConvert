@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Linq;
-using Arctron.Obj2Gltf.WaveFront;
-using Arctron.Gltf;
+using SilentWave.Obj2Gltf.WaveFront;
+using SilentWave.Gltf;
 using System.IO;
 using Newtonsoft.Json;
 
-namespace Arctron.Obj2Gltf
+namespace SilentWave.Obj2Gltf
 {
     /// <summary>
     /// A delegate to get an existing texture index or add it to the list
@@ -21,6 +21,8 @@ namespace Arctron.Obj2Gltf
     /// </summary>
     public class Converter
     {
+        public static Converter MakeDefault() => new Converter(new ObjParser(), new MtlParser());
+
         private readonly ObjParser _objParser;
         private readonly IMtlParser _mtlParser;
         /// <summary>
@@ -34,16 +36,14 @@ namespace Arctron.Obj2Gltf
             _mtlParser = mtlParser ?? throw new ArgumentNullException(nameof(mtlParser));
         }
 
-        public GltfModel Convert(String objPath, GltfConverterOptions options = null)
+        public void Convert(String objPath, String gltfPath, GltfConverterOptions options = null)
         {
             if (String.IsNullOrWhiteSpace(objPath))
                 throw new ArgumentNullException(nameof(objPath));
 
+            options = options ?? new GltfConverterOptions();
+
             var objModel = _objParser.Parse(objPath, options.RemoveDegenerateFaces, options.ObjEncoding);
-            if (!String.IsNullOrWhiteSpace(options.Name))
-            {
-                objModel.Name = options.Name;
-            }
             var objFolder = Path.GetDirectoryName(objPath);
             if (!String.IsNullOrEmpty(objModel.MatFilename))
             {
@@ -52,10 +52,10 @@ namespace Arctron.Obj2Gltf
                 var mats = _mtlParser.ParseAsync(matFile).Result;
                 objModel.Materials.AddRange(mats);
             }
-            return Convert(objModel, objFolder, options);
+            Convert(objModel, gltfPath, options);
         }
 
-        public GltfModel Convert(ObjModel objModel, String objFolder, GltfConverterOptions options = null)
+        private void Convert(ObjModel objModel, String outputFile, GltfConverterOptions options = null)
         {
             if (objModel == null) throw new ArgumentNullException(nameof(objModel));
             options = options ?? new GltfConverterOptions();
@@ -63,7 +63,7 @@ namespace Arctron.Obj2Gltf
             var u32IndicesEnabled = objModel.RequiresUint32Indices();
 
             var gltfModel = new GltfModel();
-            using (var bufferState = new BufferState(gltfModel, objFolder, u32IndicesEnabled))
+            using (var bufferState = new BufferState(gltfModel, outputFile, u32IndicesEnabled))
             {
                 gltfModel.Scenes.Add(new Scene());
                 gltfModel.Materials.AddRange(objModel.Materials.Select(x => ConvertMaterial(x, t => GetTextureIndex(gltfModel, t))));
@@ -90,20 +90,14 @@ namespace Arctron.Obj2Gltf
                 });
             }
 
-            //MakeAnImageBuffer(gltfModel, objFolder, bufferState, boundary);
-
-            //if (!options.Binary)
-            //{
-            //    gltfModel.Buffers[0].Uri = "data:application/octet-stream;base64," + System.Convert.ToBase64String(allBuffers.ToArray());
-            //}
-            return gltfModel;
+            WriteFile(gltfModel, outputFile);
         }
 
         /// <summary>
         /// write converted data to file
         /// </summary>
         /// <param name="outputFile"></param>
-        public void WriteFile(GltfModel gltfModel, String outputFile)
+        private void WriteFile(GltfModel gltfModel, String outputFile)
         {
             if (gltfModel == null) throw new ArgumentNullException();
             using (var file = File.CreateText(outputFile))

@@ -4,9 +4,9 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Arctron.Obj2Gltf.Geom;
+using SilentWave.Obj2Gltf.Geom;
 
-namespace Arctron.Obj2Gltf.WaveFront
+namespace SilentWave.Obj2Gltf.WaveFront
 {
     /// <summary>
     /// parse an obj file 

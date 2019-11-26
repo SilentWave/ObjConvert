@@ -1,4 +1,4 @@
-﻿using Arctron.Gltf;
+﻿using SilentWave.Gltf;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -7,10 +7,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
-namespace Arctron
+namespace SilentWave
 {
     public class Gltf2GlbConverter
     {
+        private const Byte SpaceCharASCII = 0x20;
+
         public static Gltf2GlbConverter Factory() => new Gltf2GlbConverter();
         static String GetMimeTypeFromFileName(String fileName)
         {
@@ -69,21 +71,24 @@ namespace Arctron
                 }
 
                 var imagesToken = o.SelectToken("images");
-                var images = imagesToken.ToObject<Gltf.Image[]>();
-                foreach (var image in images)
+                if (imagesToken != null)
                 {
-                    if (image.Uri.StartsWith("data:")) throw new NotImplementedException("data uri are not supported yet");
-                    var fileInfo = new FileInfo(Path.Combine(currentDir, image.Uri));
-                    var bufferViewIndex = bufferViews.Count;
-                    bufferViews.Add(new BufferView() { Buffer = 0, ByteOffset = concatBufferLegth, ByteLength = fileInfo.Length, Name = fileInfo.Name });
-                    image.Uri = null;
-                    image.BufferView = bufferViewIndex;
-                    image.MimeType = GetMimeTypeFromFileName(fileInfo.Name);
-                    concatBufferLegth += fileInfo.Length;
-                    files2embed.Add(fileInfo);
+                    var images = imagesToken.ToObject<Gltf.Image[]>();
+                    foreach (var image in images)
+                    {
+                        if (image.Uri.StartsWith("data:")) throw new NotImplementedException("data uri are not supported yet");
+                        var fileInfo = new FileInfo(Path.Combine(currentDir, image.Uri));
+                        var bufferViewIndex = bufferViews.Count;
+                        bufferViews.Add(new BufferView() { Buffer = 0, ByteOffset = concatBufferLegth, ByteLength = fileInfo.Length, Name = fileInfo.Name });
+                        image.Uri = null;
+                        image.BufferView = bufferViewIndex;
+                        image.MimeType = GetMimeTypeFromFileName(fileInfo.Name);
+                        concatBufferLegth += fileInfo.Length;
+                        files2embed.Add(fileInfo);
+                    }
+                    imagesToken.Replace(JToken.FromObject(images, serializer));
                 }
 
-                imagesToken.Replace(JToken.FromObject(images, serializer));
                 bufferViewsToken.Replace(JToken.FromObject(bufferViews, serializer));
                 buffersToken.Replace(JToken.FromObject(new Gltf.Buffer[] { new Gltf.Buffer() { ByteLength = concatBufferLegth } }, serializer));
 
@@ -118,7 +123,7 @@ namespace Arctron
                 var paddingCount = GetTrailingCount(glbStream.Position);
                 for (var byteWritten = 0; byteWritten < paddingCount; byteWritten++)
                 {
-                    bw.Write((Byte)0x20);
+                    bw.Write(SpaceCharASCII);
                 }
                 bw.Flush();
                 glbStream.Seek(12, SeekOrigin.Begin);
@@ -143,7 +148,7 @@ namespace Arctron
                 paddingCount = GetTrailingCount(glbStream.Position);
                 for (var byteWritten = 0; byteWritten < paddingCount; byteWritten++)
                 {
-                    bw.Write((Byte)0x00);
+                    bw.Write(Byte.MinValue);
                 }
                 glbStream.Flush();
                 bw.Seek(8, SeekOrigin.Begin);
@@ -151,12 +156,18 @@ namespace Arctron
             }
 
             if (isCurrentInputFileATempFile) File.Delete(currentInputFile);
+            if (options.DeleteOriginal)
+            {
+                File.Delete(options.InputPath);
+                foreach (var fileinfo in files2embed)
+                    fileinfo.Delete();
+            }
         }
 
         private Byte GetTrailingCount(Int64 length, Byte boundary = 4)
         {
             var remainder = (Byte)length % boundary;
-            return remainder == 0 ? (Byte)0 : (Byte)(boundary - remainder);
+            return remainder == Byte.MinValue ? Byte.MinValue : (Byte)(boundary - remainder);
         }
 
     }

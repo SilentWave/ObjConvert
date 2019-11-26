@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Arctron.Obj2Gltf.WaveFront
+namespace SilentWave.Obj2Gltf.WaveFront
 {
     /// <summary>
     /// <seealso cref="http://paulbourke.net/dataformats/mtl/"/>

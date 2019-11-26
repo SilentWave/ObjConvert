@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Arctron.Obj2Gltf.Geom
+namespace SilentWave.Obj2Gltf.Geom
 {
     public class BoundingBox2
     {

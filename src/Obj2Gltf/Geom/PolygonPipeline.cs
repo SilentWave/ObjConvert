@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Linq;
 
-namespace Arctron.Obj2Gltf.Geom
+namespace SilentWave.Obj2Gltf.Geom
 {
     internal class PolygonPipeline
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Arctron.Obj2Gltf
+namespace SilentWave.Obj2Gltf
 {
     public class BoundingBox
     {

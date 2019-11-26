@@ -1,4 +1,4 @@
-﻿namespace Arctron.Gltf
+﻿namespace SilentWave.Gltf
 {
     /// <summary>
     /// The alpha rendering mode of a material.

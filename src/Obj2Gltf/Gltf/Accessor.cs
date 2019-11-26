@@ -4,7 +4,7 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
-namespace Arctron.Gltf
+namespace SilentWave.Gltf
 {
     /// <summary>
     /// A typed view into a buffer view.

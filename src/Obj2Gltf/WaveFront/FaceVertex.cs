@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Arctron.Obj2Gltf.WaveFront
+namespace SilentWave.Obj2Gltf.WaveFront
 {
     /// <summary>
     /// represents a vertex on a face

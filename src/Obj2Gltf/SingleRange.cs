@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Arctron.Obj2Gltf
+namespace SilentWave.Obj2Gltf
 {
     /// <summary>
     /// a range expressed by Min and Max values

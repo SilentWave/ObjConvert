@@ -1,19 +1,20 @@
 using System;
-using Xunit;
-using Arctron.Obj2Gltf.WaveFront;
+using SilentWave.Obj2Gltf.WaveFront;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Arctron.Obj2Gltf.Tests
+namespace SilentWave.Obj2Gltf.Tests
 {
+    [TestClass]
     public class MtlTests
     {
-        [Fact]
+        [TestMethod]
         public void Number_of_materials_should_match()
         {
             const String mtlStart = "newmtl";
             var materialCount = 0;
             var mtlFile = @"..\..\..\..\testassets\Office\model.mtl";
-            Assert.True(System.IO.File.Exists(mtlFile), "mtl file does not exist!");
+            Assert.IsTrue(System.IO.File.Exists(mtlFile), "mtl file does not exist!");
             using (var sr = System.IO.File.OpenText(mtlFile))
             {
                 while (!sr.EndOfStream)
@@ -24,14 +25,14 @@ namespace Arctron.Obj2Gltf.Tests
             }
             var mtlParser = new MtlParser();
             var mats = mtlParser.Parse(mtlFile);
-            Assert.True(mats.Count() == materialCount);
+            Assert.IsTrue(mats.Count() == materialCount);
         }
 
-        [Fact]
+        [TestMethod]
         public void LoadMtl_should_be_globalization_independent()
         {
             var mtlFile = @"..\..\..\..\testassets\Office\model.mtl";
-            Assert.True(System.IO.File.Exists(mtlFile), "mtl file does not exist!");
+            Assert.IsTrue(System.IO.File.Exists(mtlFile), "mtl file does not exist!");
 
             var cultures = System.Globalization.CultureInfo.GetCultures(System.Globalization.CultureTypes.NeutralCultures);
             foreach (var culture in cultures)
@@ -40,15 +41,15 @@ namespace Arctron.Obj2Gltf.Tests
 
                 var mtlParser = new MtlParser();
                 var mats = mtlParser.Parse(mtlFile);
-                Assert.True(mats.Any());
+                Assert.IsTrue(mats.Any());
                 var mat = mats.Single(x => x.Name == "Mat");
-                Assert.True(mat.Diffuse.Color.Red == 0.80000001192093);
-                Assert.True(mat.Diffuse.Color.Green == 0.80000001192093);
-                Assert.True(mat.Diffuse.Color.Blue == 0.80000001192093);
+                Assert.IsTrue(mat.Diffuse.Color.Red == 0.80000001192093);
+                Assert.IsTrue(mat.Diffuse.Color.Green == 0.80000001192093);
+                Assert.IsTrue(mat.Diffuse.Color.Blue == 0.80000001192093);
             }
         }
 
-        //[Fact]
+        // [TestMethod]
         //public void Convert_materials()
         //{
         //    var mtlFile = @"C:\Users\luigi.trabacchin\Desktop\testoutput\exported bueno canada.mtl";

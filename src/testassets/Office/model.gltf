@@ -20,13 +20,13 @@
       "count": 128,
       "min": [
         -100,
-        0,
-        -378.034851
+        2.3330092,
+        -378.03485
       ],
       "max": [
-        105.192863,
-        208.333008,
-        54.6768074
+        105.19286,
+        208.33301,
+        54.676807
       ],
       "type": "VEC3",
       "bufferView": 1,
@@ -67,13 +67,13 @@
       "componentType": 5126,
       "count": 16,
       "min": [
-        0,
-        0,
-        -369.934845
+        103.5,
+        8.6258745,
+        -369.93484
       ],
       "max": [
-        105.192863,
-        196.040146,
+        105.19286,
+        196.04015,
         45.66007
       ],
       "type": "VEC3",
@@ -116,13 +116,13 @@
       "count": 16,
       "min": [
         -100,
-        0,
-        -378.034851
+        2.3330092,
+        -378.03485
       ],
       "max": [
-        0,
-        202.333008,
-        51.9529343
+        -100,
+        202.33301,
+        51.952934
       ],
       "type": "VEC3",
       "bufferView": 1,
@@ -164,13 +164,13 @@
       "count": 152,
       "min": [
         -100,
-        0,
-        -378.034851
+        2.3330092,
+        -378.03485
       ],
       "max": [
-        105.192863,
-        208.333008,
-        54.6768074
+        105.19286,
+        208.33301,
+        54.676807
       ],
       "type": "VEC3",
       "bufferView": 1,
@@ -186,29 +186,29 @@
     }
   ],
   "asset": {
-    "generator": "arctron",
+    "generator": "SilentWave",
     "version": "2.0"
   },
   "buffers": [
     {
       "name": "Indices",
       "byteLength": 1080,
-      "uri": "Indices.bin"
+      "uri": "model_Indices.bin"
     },
     {
       "name": "Positions",
       "byteLength": 3744,
-      "uri": "Positions.bin"
+      "uri": "model_Positions.bin"
     },
     {
       "name": "Normals",
       "byteLength": 3744,
-      "uri": "Normals.bin"
+      "uri": "model_Normals.bin"
     },
     {
       "name": "Uvs",
       "byteLength": 1280,
-      "uri": "Uvs.bin"
+      "uri": "model_Uvs.bin"
     }
   ],
   "bufferViews": [

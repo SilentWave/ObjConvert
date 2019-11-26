@@ -1,6 +1,6 @@
 ﻿//http://paulbourke.net/dataformats/mtl/
 
-namespace Arctron.Obj2Gltf.WaveFront
+namespace SilentWave.Obj2Gltf.WaveFront
 {
     public enum ReflectivityType
     {

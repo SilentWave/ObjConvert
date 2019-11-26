@@ -2,25 +2,28 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using Arctron.Gltf;
-using GltfBuffer = Arctron.Gltf.Buffer;
+using SilentWave.Gltf;
+using GltfBuffer = SilentWave.Gltf.Buffer;
 
-namespace Arctron.Obj2Gltf
+namespace SilentWave.Obj2Gltf
 {
     internal class BufferState : IDisposable
     {
         private Boolean disposedValue = false; // To detect redundant calls
         private readonly GltfModel _model;
+        private readonly String _gltfFileNameNoExt;
         private readonly String _gltfFolder;
         private readonly Boolean _u32IndicesEnabled;
 
         /// <summary>
         /// This assumes the model is not already populated by buffers
         /// </summary>
-        public BufferState(GltfModel model, String gltfFolder, Boolean u32IndicesEnabled)
+        public BufferState(GltfModel model, String gltfPath, Boolean u32IndicesEnabled)
         {
             _model = model ?? throw new ArgumentNullException(nameof(model));
-            _gltfFolder = gltfFolder;
+            if (String.IsNullOrWhiteSpace(gltfPath)) throw new ArgumentNullException(nameof(gltfPath));
+            _gltfFileNameNoExt = Path.GetFileNameWithoutExtension(gltfPath);
+            _gltfFolder = System.IO.Path.GetDirectoryName(gltfPath);
             _u32IndicesEnabled = u32IndicesEnabled;
         }
 
@@ -131,7 +134,7 @@ namespace Arctron.Obj2Gltf
         {
             if (PositionsBufferView == null)
             {
-                var positionsFile = "Positions.bin";
+                var positionsFile = _gltfFileNameNoExt + "_Positions.bin";
                 var stream = File.Create(Path.Combine(_gltfFolder, positionsFile));
                 PositionsStream = new BinaryWriter(stream);
                 PositionsBuffer = new GltfBuffer() { Name = "Positions", Uri = positionsFile };
@@ -161,7 +164,7 @@ namespace Arctron.Obj2Gltf
         {
             if (NormalsBufferView == null)
             {
-                var normalsFileName = "Normals.bin";
+                var normalsFileName = _gltfFileNameNoExt + "_Normals.bin";
                 var stream = File.Create(Path.Combine(_gltfFolder, normalsFileName));
                 NormalsStream = new BinaryWriter(stream);
                 NormalsBuffer = new GltfBuffer() { Name = "Normals", Uri = normalsFileName };
@@ -191,7 +194,7 @@ namespace Arctron.Obj2Gltf
         {
             if (UvsBufferView == null)
             {
-                var UvsFileName = "Uvs.bin";
+                var UvsFileName = _gltfFileNameNoExt + "_Uvs.bin";
                 var stream = File.Create(Path.Combine(_gltfFolder, UvsFileName));
                 UvsStream = new BinaryWriter(stream);
                 UvsBuffer = new GltfBuffer() { Name = "Uvs", Uri = UvsFileName };
@@ -221,7 +224,7 @@ namespace Arctron.Obj2Gltf
         {
             if (IndicesBufferView == null)
             {
-                var indicessFileName = "Indices.bin";
+                var indicessFileName = _gltfFileNameNoExt + "_Indices.bin";
                 var stream = File.Create(Path.Combine(_gltfFolder, indicessFileName));
                 IndicesStream = new BinaryWriter(stream);
                 IndicesBuffer = new GltfBuffer() { Name = "Indices", Uri = indicessFileName };

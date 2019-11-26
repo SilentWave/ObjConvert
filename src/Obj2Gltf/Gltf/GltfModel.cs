@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 
-namespace Arctron.Gltf
+namespace SilentWave.Gltf
 {
     /// <summary>
     /// gltf json model
@@ -13,7 +13,7 @@ namespace Arctron.Gltf
         [JsonProperty("accessors")]
         public List<Accessor> Accessors { get; } = new List<Accessor>();
         [JsonProperty("asset")]
-        public Asset Asset { get; set; } = new Asset { Generator = "arctron", Version = "2.0" };
+        public Asset Asset { get; set; } = new Asset { Generator = "SilentWave", Version = "2.0" };
         [JsonProperty("buffers")]
         public List<Buffer> Buffers { get; } = new List<Buffer>();
         [JsonProperty("bufferViews")]

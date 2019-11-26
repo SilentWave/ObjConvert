@@ -2,8 +2,8 @@
 
 Convert to:
 
-- gltf/glb
-- 3d tiles(b3dm) with batch ids
+- obj to gltf
+- gltf to glb
 
 Obj file limitations:
 
@@ -13,8 +13,3 @@ Obj file limitations:
 
 
 obj test model from [free3d.com](https://free3d.com/3d-models/obj-file)
-
-## References
-
-- [Convert OBJ assets to glTF](https://github.com/AnalyticalGraphicsInc/obj2gltf/)
-- [Convert obj model file to 3d tiles](https://github.com/PrincessGod/objTo3d-tiles)

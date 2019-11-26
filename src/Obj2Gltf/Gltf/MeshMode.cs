@@ -1,4 +1,4 @@
-﻿namespace Arctron.Gltf
+﻿namespace SilentWave.Gltf
 {
     /// <summary>
     /// The type of primitives to render.

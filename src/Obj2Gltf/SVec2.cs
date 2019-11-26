@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace Arctron.Obj2Gltf
+namespace SilentWave.Obj2Gltf
 {
     /// <summary>
     /// 2-d point or vector

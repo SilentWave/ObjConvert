@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Arctron.Obj2Gltf.Geom
+namespace SilentWave.Obj2Gltf.Geom
 {
     public class PolygonUtil
     {

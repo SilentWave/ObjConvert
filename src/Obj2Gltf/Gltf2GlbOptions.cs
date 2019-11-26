@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Arctron
+namespace SilentWave
 {
     public class Gltf2GlbOptions
     {
@@ -10,13 +10,16 @@ namespace Arctron
         {
             InputPath = inputPath ?? throw new ArgumentNullException();
             OutPutPath = outputPath ?? System.IO.Path.Combine(System.IO.Path.GetDirectoryName(inputPath), System.IO.Path.GetFileNameWithoutExtension(inputPath) + ".glb");
-
         }
 
         public String InputPath { get; set; }
         public Boolean MinifyJson { get; set; } = true;
-        public Boolean EmbedBuffers { get; set; } = true;
-        public Boolean EmbedImages { get; set; } = true;
+
+        // TODO: make this optional ?
+        //public Boolean EmbedBuffers { get; set; } = true;
+        //public Boolean EmbedImages { get; set; } = true;
+
+        public Boolean DeleteOriginal = false;
         public String OutPutPath { get; set; }
     }
 }
