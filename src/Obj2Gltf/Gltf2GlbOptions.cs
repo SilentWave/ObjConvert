@@ -12,14 +12,21 @@ namespace SilentWave
             OutPutPath = outputPath ?? System.IO.Path.Combine(System.IO.Path.GetDirectoryName(inputPath), System.IO.Path.GetFileNameWithoutExtension(inputPath) + ".glb");
         }
 
-        public String InputPath { get; set; }
+        public String InputPath { get; }
+        
+        /// <summary>
+        /// Default is true
+        /// </summary>
         public Boolean MinifyJson { get; set; } = true;
 
         // TODO: make this optional ?
         //public Boolean EmbedBuffers { get; set; } = true;
         //public Boolean EmbedImages { get; set; } = true;
 
+        /// <summary>
+        /// Default is false
+        /// </summary>
         public Boolean DeleteOriginal { get; set; } = false;
-        public String OutPutPath { get; set; }
+        public String OutPutPath { get; }
     }
 }

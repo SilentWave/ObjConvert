@@ -53,6 +53,11 @@ namespace SilentWave.Obj2Gltf
                 objModel.Materials.AddRange(mats);
             }
             Convert(objModel, gltfPath, options);
+            if (options.DeleteOriginals)
+            {
+                File.Delete(objModel.MatFilename);
+                File.Delete(objPath);
+            }
         }
 
         private void Convert(ObjModel objModel, String outputFile, GltfConverterOptions options = null)
@@ -162,7 +167,7 @@ namespace SilentWave.Obj2Gltf
             return textureIndex;
         }
 
-        
+
 
         private Gltf.Material GetDefault(String name = "default", AlphaMode mode = AlphaMode.OPAQUE)
         {
@@ -482,7 +487,7 @@ namespace SilentWave.Obj2Gltf
                         {
                             if (triangle.V2.T > 0) // hasUvs
                             {
-                              
+
                                 var uv = new SVec2(t2.U, 1 - t2.V);
                                 bufferState.AddUv(uv);
                             }
