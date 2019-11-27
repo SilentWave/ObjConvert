@@ -45,17 +45,22 @@ namespace SilentWave.Obj2Gltf
 
             var objModel = _objParser.Parse(objPath, options.RemoveDegenerateFaces, options.ObjEncoding);
             var objFolder = Path.GetDirectoryName(objPath);
+
+
             if (!String.IsNullOrEmpty(objModel.MatFilename))
             {
                 var matFile = Path.Combine(objFolder, objModel.MatFilename);
-
                 var mats = _mtlParser.ParseAsync(matFile).Result;
                 objModel.Materials.AddRange(mats);
             }
             Convert(objModel, gltfPath, options);
             if (options.DeleteOriginals)
             {
-                File.Delete(objModel.MatFilename);
+                if (!String.IsNullOrEmpty(objModel.MatFilename))
+                {
+                    var matFile = Path.Combine(objFolder, objModel.MatFilename);
+                    File.Delete(matFile);
+                }
                 File.Delete(objPath);
             }
         }
