@@ -19,7 +19,7 @@ namespace SilentWave
         //public Boolean EmbedBuffers { get; set; } = true;
         //public Boolean EmbedImages { get; set; } = true;
 
-        public Boolean DeleteOriginal = false;
+        public Boolean DeleteOriginal { get; set; } = false;
         public String OutPutPath { get; set; }
     }
 }
